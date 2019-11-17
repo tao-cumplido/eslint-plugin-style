@@ -103,5 +103,5 @@ The default configuration is:
 }
 ```
 
-[npm-image]: https://img.shields.io/npm/v/jime.svg
-[npm-url]: https://npmjs.org/package/jime
+[npm-image]: https://img.shields.io/npm/v/eslint-plugin-module-imports.svg
+[npm-url]: https://npmjs.org/package/eslint-plugin-module-imports
