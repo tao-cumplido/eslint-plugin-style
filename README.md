@@ -31,11 +31,13 @@ In your `.eslintrc`:
 
 ### `module-imports/group`
 
-Requires imports to be grouped and groups to be separated by a new line. Auto-fixable! The rule can be configured with an object that looks like this:
+Requires imports to be grouped and groups to be separated by a new line. Auto-fixable!
+
+The following configuration options can be set:
 
 ```ts
 interface Configuration {
-    groups: Array<string | string[]>;
+    groups?: Array<string | string[]>;
 }
 ```
 
@@ -46,11 +48,60 @@ where `string` can be a package name, a scope name or one of the following token
 -   `#RELATIVE`: all relative imports
 -   `#ABSOLUTE`: all absolute imports, never seen a project use these, but it's possible
 
-The default configuration is: `['#NODE', '#EXTERNAL', '#ABSOLUTE', '#RELATIVE']`.
+The default configuration is:
 
-Nested arrays allow packages to be treated as a single group, e.g. `[ ['#NODE', '#EXTERNAL'], ['@my-scope', 'my-package'], '#RELATIVE']`.
+```json
+{
+    "groups": ["#NODE", "#EXTERNAL", "#ABSOLUTE", "#RELATIVE"]
+}
+```
+
+Nested arrays allow packages to be treated as a single group, e.g.
+
+```json
+{
+    "groups": [["#NODE", "#EXTERNAL"], ["@my-scope", "my-package"], "#RELATIVE"]
+}
+```
 
 Explicitly declared packages and scopes have precedence over the predefined tokens. Unused tokens are in an implicit additional group.
+
+### `module-imports/sort`
+
+Requires import groups to be sorted by module first and then by specifier. Auto-fixable!
+
+The following configuration options can be set:
+
+```ts
+interface Configuration {
+    specifier?: 'imported' | 'local';
+    locales?: string[];
+    sensitivity?: 'base' | 'accent' | 'case' | 'variant';
+    ignorePunctuation?: boolean;
+    numeric?: boolean;
+    caseFirst?: 'upper' | 'lower' | 'false';
+    caseGroups?: boolean;
+}
+```
+
+-   `specifier`: determines specifier priority, e.g. in `import { foo as bar } from 'baz'` `foo` is `'imported'` and `bar` is `'local'`
+-   `caseGroups`: when `true`, import names need to be grouped by case before sorting
+
+For all other possible settings, see [String#localeCompare](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare).
+
+The default configuration is:
+
+```json
+{
+    "specifier": "imported",
+    "locales": ["en-US"],
+    "sensitivity": "variant",
+    "ignorePunctuation": false,
+    "numeric": true,
+    "caseFirst": "lower",
+    "caseGroups": false
+}
+```
 
 [npm-image]: https://img.shields.io/npm/v/jime.svg
 [npm-url]: https://npmjs.org/package/jime
