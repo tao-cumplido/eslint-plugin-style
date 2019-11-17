@@ -1,7 +1,7 @@
 import { Rule, SourceCode } from 'eslint';
 import { ImportDeclaration, ImportSpecifier } from 'estree';
 
-import { importDeclarations, linesBetween, SortOptions, sortBy } from '../util';
+import { importDeclarations, linesBetween, sortBy, SortOptions } from '../util';
 
 interface Configuration extends SortOptions {
     specifier: 'imported' | 'local';

@@ -1,5 +1,6 @@
 module.exports = {
     extends: ['eslint:recommended', 'prettier', 'plugin:prettier/recommended'],
+    plugins: ['module-imports'],
     parserOptions: {
         ecmaVersion: 2018,
     },
@@ -62,6 +63,9 @@ module.exports = {
         'require-yield': 'error',
         'sort-imports': 'off',
         'symbol-description': 'error',
+        // plugins
+        'module-imports/group': 'error',
+        'module-imports/sort': ['error', { caseGroups: true }],
     },
     overrides: [
         {
