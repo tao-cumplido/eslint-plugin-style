@@ -120,6 +120,10 @@ export function create(context: Rule.RuleContext): Rule.RuleListener {
         };
     });
 
+    if (imports.length === 0) {
+        return {};
+    }
+
     const sorted = sortBy(imports, ['index']);
 
     let previousIndex = sorted[0].index;

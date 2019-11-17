@@ -19,6 +19,9 @@ function trim([code]: TemplateStringsArray) {
 tester.run('group', group, {
     valid: [
         {
+            code: '',
+        },
+        {
             code: trim`
                 import 'fs';
                 import 'path';

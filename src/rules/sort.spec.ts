@@ -19,6 +19,9 @@ function trim([code]: TemplateStringsArray) {
 tester.run('sort', sort, {
     valid: [
         {
+            code: '',
+        },
+        {
             code: trim`
                 import 'bar';
                 import 'foo';
