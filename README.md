@@ -31,7 +31,7 @@ In your `.eslintrc`:
 
 ### `module-imports/group`
 
-Requires imports to be grouped. Auto-fixable! The rule can be configured with an object that looks like this:
+Requires imports to be grouped and groups to be separated by a new line. Auto-fixable! The rule can be configured with an object that looks like this:
 
 ```ts
 interface Configuration {

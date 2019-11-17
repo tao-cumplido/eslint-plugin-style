@@ -4,6 +4,8 @@ import builtinModules from 'builtin-modules';
 import { Rule } from 'eslint';
 import { ImportDeclaration } from 'estree';
 
+import { importDeclarations, linesBetween, sortBy } from '../util';
+
 enum GroupClass {
     Node = '#NODE',
     External = '#EXTERNAL',
@@ -59,9 +61,7 @@ function checkLines(
     next: ImportDeclaration,
     lineCount: number,
 ) {
-    const linesBetween = (next.loc?.start.line ?? 0) - (previous.loc?.end.line ?? 0) - 1;
-
-    if (linesBetween === lineCount) {
+    if (linesBetween(previous, next) === lineCount) {
         return;
     }
 
@@ -113,16 +113,14 @@ export function create(context: Rule.RuleContext): Rule.RuleListener {
 
     const source = context.getSourceCode();
 
-    const imports = source.ast.body
-        .filter((node): node is ImportDeclaration => node.type === 'ImportDeclaration')
-        .map((node) => {
-            return {
-                index: groupIndex(node, groupConfiguration),
-                node,
-            };
-        });
+    const imports = importDeclarations(source).map((node) => {
+        return {
+            index: groupIndex(node, groupConfiguration),
+            node,
+        };
+    });
 
-    const sorted = [...imports].sort((a, b) => a.index - b.index);
+    const sorted = sortBy(imports, ['index']);
 
     let previousIndex = sorted[0].index;
 
