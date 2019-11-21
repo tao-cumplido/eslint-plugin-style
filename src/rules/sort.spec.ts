@@ -1,5 +1,5 @@
 import { javascript, LintReporter, LintResult } from '../util/test';
-import { Configuration, rule } from './sort';
+import { rule, Configuration } from './sort';
 
 describe('rule: sort', () => {
     const reporter = new LintReporter<Configuration>(rule);

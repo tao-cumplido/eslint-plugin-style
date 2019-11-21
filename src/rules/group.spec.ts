@@ -1,5 +1,5 @@
 import { javascript, LintReporter, LintResult } from '../util/test';
-import { Configuration, GroupClass, rule } from './group';
+import { rule, Configuration, GroupClass } from './group';
 
 describe('rule: group', () => {
     const reporter = new LintReporter<Configuration>(rule);
