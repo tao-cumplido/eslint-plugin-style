@@ -3,7 +3,7 @@ import { ImportDeclaration, ImportSpecifier } from 'estree';
 
 import { importDeclarations, linesBetween, sortBy, SortOptions } from '../util';
 
-interface Configuration extends SortOptions {
+export interface Configuration extends SortOptions {
     specifier: 'imported' | 'local';
 }
 
@@ -72,67 +72,68 @@ function sortSpecifiers(
     }
 }
 
-export const meta: Rule.RuleMetaData = {
-    fixable: 'code',
-    schema: [
-        {
-            type: 'object',
-            properties: {
-                locales: {
-                    type: 'array',
-                    items: {
-                        type: 'string',
+export const rule: Rule.RuleModule = {
+    meta: {
+        fixable: 'code',
+        schema: [
+            {
+                type: 'object',
+                properties: {
+                    locales: {
+                        type: 'array',
+                        items: {
+                            type: 'string',
+                        },
+                    },
+                    sensitivity: {
+                        enum: ['base', 'accent', 'case', 'variant'],
+                    },
+                    ignorePunctuation: {
+                        type: 'boolean',
+                    },
+                    numeric: {
+                        type: 'boolean',
+                    },
+                    caseFirst: {
+                        enum: ['upper', 'lower', 'false'],
+                    },
+                    caseGroups: {
+                        type: 'boolean',
                     },
                 },
-                sensitivity: {
-                    enum: ['base', 'accent', 'case', 'variant'],
-                },
-                ignorePunctuation: {
-                    type: 'boolean',
-                },
-                numeric: {
-                    type: 'boolean',
-                },
-                caseFirst: {
-                    enum: ['upper', 'lower', 'false'],
-                },
-                caseGroups: {
-                    type: 'boolean',
-                },
             },
-        },
-    ],
-};
+        ],
+    },
+    create(context) {
+        const configuration: Configuration = { ...defaultConfiguration, ...context.options[0] };
 
-export function create(context: Rule.RuleContext): Rule.RuleListener {
-    const configuration: Configuration = { ...defaultConfiguration, ...context.options[0] };
+        const source = context.getSourceCode();
 
-    const source = context.getSourceCode();
+        importDeclarations(source)
+            .reduce<ImportDeclaration[][]>(
+                (result, node, index, imports) => {
+                    if (index > 0 && linesBetween(imports[index - 1], node) > 0) {
+                        result.push([]);
+                    }
 
-    importDeclarations(source)
-        .reduce<ImportDeclaration[][]>(
-            (result, node, index, imports) => {
-                if (index > 0 && linesBetween(imports[index - 1], node) > 0) {
-                    result.push([]);
-                }
+                    result[result.length - 1].push(node);
 
-                result[result.length - 1].push(node);
-
-                return result;
-            },
-            [[]],
-        )
-        .forEach((group) => {
-            sortModules(context, source, configuration, group);
-            group.forEach((node) => {
-                sortSpecifiers(
-                    context,
-                    source,
-                    configuration,
-                    node.specifiers.filter(($): $ is ImportSpecifier => $.type === 'ImportSpecifier'),
-                );
+                    return result;
+                },
+                [[]],
+            )
+            .forEach((group) => {
+                sortModules(context, source, configuration, group);
+                group.forEach((node) => {
+                    sortSpecifiers(
+                        context,
+                        source,
+                        configuration,
+                        node.specifiers.filter(($): $ is ImportSpecifier => $.type === 'ImportSpecifier'),
+                    );
+                });
             });
-        });
 
-    return {};
-}
+        return {};
+    },
+};

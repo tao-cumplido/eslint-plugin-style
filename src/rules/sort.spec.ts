@@ -1,141 +1,165 @@
-import { RuleTester } from 'eslint';
+import { javascript, LintReporter, LintResult } from '../util/test';
+import { Configuration, rule } from './sort';
 
-import * as sort from './sort';
+describe('rule: sort', () => {
+    const reporter = new LintReporter<Configuration>(rule);
 
-const tester = new RuleTester({
-    parserOptions: {
-        ecmaVersion: 2019,
-        sourceType: 'module',
-    },
-});
+    describe('valid code', () => {
+        test('no imports', () => {
+            const report = reporter.lint('');
+            expect(report.result).toEqual(LintResult.Valid);
+        });
 
-function trim([code]: TemplateStringsArray) {
-    return code
-        .split('\n')
-        .map((line) => line.trim())
-        .join('\n');
-}
-
-tester.run('sort', sort, {
-    valid: [
-        {
-            code: '',
-        },
-        {
-            code: trim`
+        test('sorted modules', () => {
+            const report = reporter.lint(javascript`
                 import 'bar';
                 import 'foo';
-            `,
-        },
-        {
-            code: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+
+        test('separate groups', () => {
+            const report = reporter.lint(javascript`
                 import 'foo';
 
                 import 'bar';
-            `,
-        },
-        {
-            code: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+
+        test('sorted specifiers', () => {
+            const report = reporter.lint(javascript`
                 import { a, b } from 'foo';
-            `,
-        },
-        {
-            code: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+
+        test('2 < 10', () => {
+            const report = reporter.lint(javascript`
                 import { a2, a10 } from 'foo';
-            `,
-        },
-        {
-            code: trim`
-                import { a as b, b as a } from 'foo';
-            `,
-        },
-    ],
-    invalid: [
-        {
-            code: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+
+        test('renamed specifiers', () => {
+            const report = reporter.lint(javascript`
+                import { a as b, b as a} from 'foo';
+            `);
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+    });
+
+    describe('invalid code', () => {
+        test('unsorted modules', () => {
+            const report = reporter.lint(javascript`
                 import 'foo';
                 import 'bar';
-            `,
-            output: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
                 import 'bar';
                 import 'foo';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
+            `);
+        });
+
+        test('unsorted specifiers', () => {
+            const report = reporter.lint(javascript`
                 import { b, a } from 'foo';
-            `,
-            output: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
                 import { a, b } from 'foo';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
-                import { A, b, B, a } from 'foo';
-            `,
-            output: trim`
-                import { a, A, b, B } from 'foo';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
-                import { A, b, B, a } from 'foo';
-            `,
-            output: trim`
-                import { a, b, A, B } from 'foo';
-            `,
-            options: [
+            `);
+        });
+
+        test('mixed case specifiers', () => {
+            const report = reporter.lint(javascript`
+                import { Ab, ba, Ba, ab } from 'foo';
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
+                import { ab, Ab, ba, Ba } from 'foo';
+            `);
+        });
+
+        test('case groups', () => {
+            const report = reporter.lint(
+                javascript`
+                    import { Ab, ba, Ba, ab } from 'foo';
+                `,
                 {
                     caseGroups: true,
                 },
-            ],
-            errors: 1,
-        },
-        {
-            code: trim`
-                import { A, b, B, a } from 'foo';
-            `,
-            output: trim`
-                import { A, B, a, b } from 'foo';
-            `,
-            options: [
+            );
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
+                import { ab, ba, Ab, Ba } from 'foo';
+            `);
+        });
+
+        test('case groups, upper first', () => {
+            const report = reporter.lint(
+                javascript`
+                    import { Ab, ba, Ba, ab } from 'foo';
+                `,
                 {
                     caseGroups: true,
                     caseFirst: 'upper',
                 },
-            ],
-            errors: 1,
-        },
-        {
-            code: trim`
-                import { a2, a10 } from 'foo';
-            `,
-            output: trim`
-                import { a10, a2 } from 'foo';
-            `,
-            options: [
+            );
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
+                import { Ab, Ba, ab, ba } from 'foo';
+            `);
+        });
+
+        test('2 > 10', () => {
+            const report = reporter.lint(
+                javascript`
+                    import { a2, a10 } from 'foo';
+                `,
                 {
                     numeric: false,
                 },
-            ],
-            errors: 1,
-        },
-        {
-            code: trim`
-                import { a as b, b as a } from 'foo';
-            `,
-            output: trim`
-                import { b as a, a as b } from 'foo';
-            `,
-            options: [
+            );
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
+                import { a10, a2 } from 'foo';
+            `);
+        });
+
+        test('unsorted local specifiers', () => {
+            const report = reporter.lint(
+                javascript`
+                    import { a as b, b as a } from 'foo';
+                `,
                 {
                     specifier: 'local',
                 },
-            ],
-            errors: 1,
-        },
-    ],
+            );
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
+                import { b as a, a as b } from 'foo';
+            `);
+        });
+    });
 });

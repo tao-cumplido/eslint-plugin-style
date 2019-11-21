@@ -48,16 +48,19 @@ export function sortBy<T extends object>(source: T[], path: ReadonlyArray<string
         if (typeof valueA === 'string' && typeof valueB === 'string') {
             const locales = options?.locales;
 
-            const [firstA, ...restA] = valueA;
-            const [firstB, ...restB] = valueB;
+            const [firstA] = valueA;
+            const [firstB] = valueB;
             const lowerA = firstA.toLocaleLowerCase(locales);
             const upperA = firstA.toLocaleUpperCase(locales);
             const lowerB = firstB.toLocaleLowerCase(locales);
             const upperB = firstB.toLocaleUpperCase(locales);
-            const caseDifferent = (lowerA > firstA && firstB > upperB) || (firstA > upperA && lowerB > firstB);
+            const isUpperA = lowerA > firstA;
+            const caseDifferent = (isUpperA && firstB > upperB) || (firstA > upperA && lowerB > firstB);
 
             if (options?.caseGroups && lowerA !== lowerB && caseDifferent) {
-                return `${lowerA}${restA.join('')}`.localeCompare(`${upperA}${restB.join('')}`, locales, options);
+                const compareA = isUpperA ? upperA : lowerA;
+                const compareB = isUpperA ? lowerA : upperA;
+                return compareA.localeCompare(compareB, locales, options);
             }
 
             return valueA.localeCompare(valueB, locales, options);

@@ -1,28 +1,17 @@
-import { RuleTester } from 'eslint';
+import { javascript, LintReporter, LintResult } from '../util/test';
+import { Configuration, GroupClass, rule } from './group';
 
-import * as group from './group';
+describe('rule: group', () => {
+    const reporter = new LintReporter<Configuration>(rule);
 
-const tester = new RuleTester({
-    parserOptions: {
-        ecmaVersion: 2019,
-        sourceType: 'module',
-    },
-});
+    describe('valid code', () => {
+        test('no imports', () => {
+            const report = reporter.lint('');
+            expect(report.result).toEqual(LintResult.Valid);
+        });
 
-function trim([code]: TemplateStringsArray) {
-    return code
-        .split('\n')
-        .map((line) => line.trim())
-        .join('\n');
-}
-
-tester.run('group', group, {
-    valid: [
-        {
-            code: '',
-        },
-        {
-            code: trim`
+        test('default groups', () => {
+            const report = reporter.lint(javascript`
                 import 'fs';
                 import 'path';
 
@@ -33,127 +22,164 @@ tester.run('group', group, {
 
                 import '../foo';
                 import './bar';
-            `,
-        },
-        {
-            code: trim`
-                import 'fs';
+            `);
 
-                import 'foo';
-            `,
-        },
-        {
-            code: trim`
-                import 'foo';
+            expect(report.result).toEqual(LintResult.Valid);
+        });
 
-                import 'fs';
-            `,
-            options: [
+        test('custom group order', () => {
+            const report = reporter.lint(
+                javascript`
+                    import 'foo';
+
+                    import 'fs';
+                `,
                 {
-                    groups: ['#EXTERNAL', '#NODE'],
+                    groups: [GroupClass.External, GroupClass.Node],
                 },
-            ],
-        },
-        {
-            code: trim`
-                import 'fs';
+            );
 
-                import 'path';
-            `,
-            options: [
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+
+        test('explicit package precedence', () => {
+            const report = reporter.lint(
+                javascript`
+                    import 'fs';
+
+                    import 'foo';
+
+                    import 'path';
+                `,
                 {
-                    groups: ['fs', '#NODE'],
+                    groups: ['fs', GroupClass.External, GroupClass.Node],
                 },
-            ],
-        },
-    ],
-    invalid: [
-        {
-            code: trim`
+            );
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+
+        test('mixed groups', () => {
+            const report = reporter.lint(
+                javascript`
+                    import 'fs';
+                    import 'foo';
+                    import 'path';
+                `,
+                {
+                    groups: [[GroupClass.Node, GroupClass.External]],
+                },
+            );
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+    });
+
+    describe('invalid code', () => {
+        test('missing new line between groups', () => {
+            const report = reporter.lint(javascript`
                 import 'fs';
                 import 'foo';
-            `,
-            output: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
                 import 'fs';
 
                 import 'foo';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
-                import 'foo';
-                import 'fs';
-            `,
-            output: trim`
-                import 'fs';
+            `);
+        });
 
-                import 'foo';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
+        test('too many lines between groups', () => {
+            const report = reporter.lint(javascript`
                 import 'fs';
 
 
                 import 'foo';
-            `,
-            output: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
                 import 'fs';
 
                 import 'foo';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
+            `);
+        });
+
+        test('invalid new line in group', () => {
+            const report = reporter.lint(javascript`
                 import 'fs';
 
                 import 'path';
-            `,
-            output: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
                 import 'fs';
                 import 'path';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
-                import './foo';
-                import 'foo';
-                import 'fs';
-            `,
-            output: trim`
-                import 'fs';
+            `);
+        });
 
-                import 'foo';
-
-                import './foo';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
+        test('wrong group order', () => {
+            const report = reporter.lint(javascript`
                 import 'foo';
 
                 import 'fs';
+            `);
 
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
+                import 'fs';
+
+                import 'foo';
+            `);
+        });
+
+        test('ungrouped', () => {
+            const report = reporter.lint(javascript`
+                import './bar';
+                import 'foo';
+                import 'fs';
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
+                import 'fs';
+
+                import 'foo';
+
+                import './bar';
+            `);
+        });
+
+        test('delimited group', () => {
+            const report = reporter.lint(javascript`
+                import 'foo';
+
+                import 'fs';
                 import 'path';
 
                 import 'bar';
-            `,
-            output: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
                 import 'fs';
                 import 'path';
 
                 import 'foo';
                 import 'bar';
-            `,
-            errors: 1,
-        },
-        {
-            code: trim`
+            `);
+        });
+
+        test('separated groups', () => {
+            const report = reporter.lint(javascript`
                 import 'fs';
 
                 import 'path';
@@ -161,61 +187,71 @@ tester.run('group', group, {
                 import 'foo';
 
                 import 'bar';
-            `,
-            output: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(2);
+            expect(report.code).toEqual(javascript`
                 import 'fs';
                 import 'path';
 
                 import 'foo';
                 import 'bar';
-            `,
-            errors: 2,
-        },
-        {
-            code: trim`
+            `);
+        });
+
+        test('invalid new lines and missing new lines', () => {
+            const report = reporter.lint(javascript`
                 import 'fs';
 
                 import 'path';
                 import 'foo';
 
                 import 'bar';
-            `,
-            output: trim`
+            `);
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(3);
+            expect(report.code).toEqual(javascript`
                 import 'fs';
                 import 'path';
 
                 import 'foo';
                 import 'bar';
-            `,
-            errors: 3,
-        },
-        {
-            code: trim`
-                import 'foo/a';
+            `);
+        });
+
+        test('scope group and implicit catch-all-group', () => {
+            const report = reporter.lint(
+                javascript`
+                    import 'foo/a';
+                    import 'fs';
+                    import 'foo/b';
+                    import '/';
+                    import './bar';
+                    import 'foo/c';
+                    import 'baz';
+                    import 'foo/d';
+                `,
+                {
+                    groups: [[GroupClass.Node, GroupClass.Absolute], 'foo'],
+                },
+            );
+
+            expect(report.result).toEqual(LintResult.Fixed);
+            expect(report.errors).toHaveLength(1);
+            expect(report.code).toEqual(javascript`
                 import 'fs';
-                import 'foo/b';
                 import '/';
-                import 'foo/c';
-                import 'bar';
-                import 'foo/d';
-            `,
-            output: trim`
-                import 'fs';
-                import '/';
 
                 import 'foo/a';
                 import 'foo/b';
                 import 'foo/c';
                 import 'foo/d';
 
-                import 'bar';
-            `,
-            options: [
-                {
-                    groups: [['#NODE', '#ABSOLUTE'], 'foo'],
-                },
-            ],
-            errors: 1,
-        },
-    ],
+                import './bar';
+                import 'baz';
+            `);
+        });
+    });
 });

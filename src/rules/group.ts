@@ -6,7 +6,7 @@ import { ImportDeclaration } from 'estree';
 
 import { importDeclarations, linesBetween, sortBy } from '../util';
 
-enum GroupClass {
+export enum GroupClass {
     Node = '#NODE',
     External = '#EXTERNAL',
     Absolute = '#ABSOLUTE',
@@ -15,7 +15,7 @@ enum GroupClass {
 
 type GroupConfiguration = Array<string | string[]>;
 
-interface Configuration {
+export interface Configuration {
     groups: GroupConfiguration;
 }
 
@@ -88,100 +88,101 @@ function groupLabels(groups: GroupConfiguration) {
     });
 }
 
-export const meta: Rule.RuleMetaData = {
-    fixable: 'code',
-    schema: [
-        {
-            type: 'object',
-            properties: {
-                groups: {
-                    type: 'array',
-                    items: {
-                        type: ['string', 'array'],
+export const rule: Rule.RuleModule = {
+    meta: {
+        fixable: 'code',
+        schema: [
+            {
+                type: 'object',
+                properties: {
+                    groups: {
+                        type: 'array',
                         items: {
-                            type: 'string',
+                            type: ['string', 'array'],
+                            items: {
+                                type: 'string',
+                            },
                         },
                     },
                 },
             },
-        },
-    ],
-};
+        ],
+    },
+    create(context) {
+        const groupConfiguration: GroupConfiguration = context.options[0]?.groups ?? defaultConfiguration.groups;
 
-export function create(context: Rule.RuleContext): Rule.RuleListener {
-    const groupConfiguration: GroupConfiguration = context.options[0]?.groups ?? defaultConfiguration.groups;
+        const source = context.getSourceCode();
 
-    const source = context.getSourceCode();
+        const imports = importDeclarations(source).map((node) => {
+            return {
+                index: groupIndex(node, groupConfiguration),
+                node,
+            };
+        });
 
-    const imports = importDeclarations(source).map((node) => {
-        return {
-            index: groupIndex(node, groupConfiguration),
-            node,
-        };
-    });
+        if (imports.length === 0) {
+            return {};
+        }
 
-    if (imports.length === 0) {
-        return {};
-    }
+        const sorted = sortBy(imports, ['index']);
 
-    const sorted = sortBy(imports, ['index']);
+        let previousIndex = sorted[0].index;
 
-    let previousIndex = sorted[0].index;
+        const groups = sorted.reduce<ImportDeclaration[][]>(
+            (r, v) => {
+                const current = r[r.length - 1];
 
-    const groups = sorted.reduce<ImportDeclaration[][]>(
-        (r, v) => {
-            const current = r[r.length - 1];
-
-            if (previousIndex === v.index) {
-                current.push(v.node);
-            } else {
-                r.push([v.node]);
-            }
-
-            previousIndex = v.index;
-
-            return r;
-        },
-        [[]],
-    );
-
-    if (sorted.some(($, i) => $ !== imports[i])) {
-        const first = imports[0].node;
-        const last = imports[imports.length - 1].node;
-        context.report({
-            node: last,
-            message: `Expected import groups: ${groupLabels(groupConfiguration).join(', ')}`,
-            fix(fixer) {
-                if (!first.range || !last.range) {
-                    return null;
+                if (previousIndex === v.index) {
+                    current.push(v.node);
+                } else {
+                    r.push([v.node]);
                 }
 
-                const code = groups
-                    .map((nodes) => {
-                        return nodes.map((node) => source.getText(node)).join('\n');
-                    })
-                    .join('\n\n');
+                previousIndex = v.index;
 
-                return fixer.replaceTextRange([first.range[0], last.range[1]], code);
+                return r;
             },
-        });
-    } else {
-        groups.forEach((group, i) => {
-            for (let j = 1; j < group.length; j++) {
-                const previous = group[j - 1];
-                const current = group[j];
-                checkLines(context, previous, current, 0);
-            }
+            [[]],
+        );
 
-            if (i === 0) {
-                return;
-            }
+        if (sorted.some(($, i) => $ !== imports[i])) {
+            const first = imports[0].node;
+            const last = imports[imports.length - 1].node;
+            context.report({
+                node: last,
+                message: `Expected import groups: ${groupLabels(groupConfiguration).join(', ')}`,
+                fix(fixer) {
+                    if (!first.range || !last.range) {
+                        return null;
+                    }
 
-            const previous = groups[i - 1][groups[i - 1].length - 1];
-            const current = group[0];
-            checkLines(context, previous, current, 1);
-        });
-    }
+                    const code = groups
+                        .map((nodes) => {
+                            return nodes.map((node) => source.getText(node)).join('\n');
+                        })
+                        .join('\n\n');
 
-    return {};
-}
+                    return fixer.replaceTextRange([first.range[0], last.range[1]], code);
+                },
+            });
+        } else {
+            groups.forEach((group, i) => {
+                for (let j = 1; j < group.length; j++) {
+                    const previous = group[j - 1];
+                    const current = group[j];
+                    checkLines(context, previous, current, 0);
+                }
+
+                if (i === 0) {
+                    return;
+                }
+
+                const previous = groups[i - 1][groups[i - 1].length - 1];
+                const current = group[0];
+                checkLines(context, previous, current, 1);
+            });
+        }
+
+        return {};
+    },
+};
