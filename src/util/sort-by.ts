@@ -3,6 +3,16 @@ export type SortOptions = Pick<Intl.CollatorOptions, 'sensitivity' | 'ignorePunc
     caseGroups?: boolean;
 };
 
+interface Sortable<T> {
+    source: T;
+    sortValue: unknown;
+}
+
+interface CaseGroups<T> {
+    upper: Array<Sortable<T>>;
+    lower: Array<Sortable<T>>;
+}
+
 function isIndexable(value: unknown): value is Record<string | number, unknown> {
     return typeof value === 'object' && value !== null;
 }
@@ -21,6 +31,20 @@ function readPath(from: unknown, path: ReadonlyArray<string | number>): unknown 
     return readPath(from[head], rest);
 }
 
+function sort<T>(options?: SortOptions) {
+    return (a: Sortable<T>, b: Sortable<T>) => {
+        if (typeof a.sortValue === 'number' && typeof b.sortValue === 'number') {
+            return a.sortValue - b.sortValue;
+        }
+
+        if (typeof a.sortValue === 'string' && typeof b.sortValue === 'string') {
+            return a.sortValue.localeCompare(b.sortValue, options?.locales, options);
+        }
+
+        return 0;
+    };
+}
+
 export function sortBy<T extends object, K1 extends keyof T, K2 extends keyof T[K1], K3 extends keyof T[K1][K2]>(
     source: T[],
     path: readonly [K1, K2, K3],
@@ -36,36 +60,43 @@ export function sortBy<T extends object, K extends keyof T>(
     path: readonly [K],
     options?: SortOptions,
 ): T[];
-export function sortBy<T extends object>(source: T[], path: ReadonlyArray<string | number>, options?: SortOptions) {
-    return [...source].sort((a, b) => {
-        const valueA = readPath(a, path);
-        const valueB = readPath(b, path);
+export function sortBy<T extends object>(sources: T[], path: ReadonlyArray<string | number>, options?: SortOptions) {
+    const caseGroups = sources.reduce<CaseGroups<T>>(
+        (groups, source) => {
+            const sortValue = readPath(source, path);
 
-        if (typeof valueA === 'number' && typeof valueB === 'number') {
-            return valueA - valueB;
-        }
+            const sortable: Sortable<T> = {
+                source,
+                sortValue,
+            };
 
-        if (typeof valueA === 'string' && typeof valueB === 'string') {
-            const locales = options?.locales;
-
-            const [firstA] = valueA;
-            const [firstB] = valueB;
-            const lowerA = firstA.toLocaleLowerCase(locales);
-            const upperA = firstA.toLocaleUpperCase(locales);
-            const lowerB = firstB.toLocaleLowerCase(locales);
-            const upperB = firstB.toLocaleUpperCase(locales);
-            const isUpperA = lowerA > firstA;
-            const caseDifferent = (isUpperA && firstB > upperB) || (firstA > upperA && lowerB > firstB);
-
-            if (options?.caseGroups && lowerA !== lowerB && caseDifferent) {
-                const compareA = isUpperA ? upperA : lowerA;
-                const compareB = isUpperA ? lowerA : upperA;
-                return compareA.localeCompare(compareB, locales, options);
+            if (
+                options?.caseGroups &&
+                typeof sortValue === 'string' &&
+                sortValue[0].toLocaleUpperCase(options?.locales) === sortValue[0]
+            ) {
+                groups.upper.push(sortable);
+            } else {
+                groups.lower.push(sortable);
             }
 
-            return valueA.localeCompare(valueB, locales, options);
-        }
+            return groups;
+        },
+        {
+            upper: [],
+            lower: [],
+        },
+    );
 
-        return 0;
-    });
+    caseGroups.upper.sort(sort(options));
+    caseGroups.lower.sort(sort(options));
+
+    return [
+        ...(options?.caseFirst === 'upper' ? caseGroups.upper : caseGroups.lower)
+            .sort(sort(options))
+            .map(({ source }) => source),
+        ...(options?.caseFirst === 'upper' ? caseGroups.lower : caseGroups.upper)
+            .sort(sort(options))
+            .map(({ source }) => source),
+    ];
 }
