@@ -1,7 +1,7 @@
 import { Rule, SourceCode } from 'eslint';
 import { ImportDeclaration, ImportSpecifier } from 'estree';
 
-import { importDeclarations, linesBetween, sortBy, SortOptions } from '../util';
+import { extrema, fixRange, importDeclarations, linesBetween, sortBy, SortOptions } from '../util';
 
 export interface Configuration extends SortOptions {
     specifier: 'imported' | 'local';
@@ -23,22 +23,10 @@ function sortModules(
     const sorted = sortBy(group, ['source', 'value'], configuration);
 
     if (sorted.some((node, i) => node !== group[i])) {
-        const first = group[0];
-        const last = group[group.length - 1];
-
-        context.report({
-            node: last,
+        fixRange(context, {
+            range: extrema(group),
             message: `Expected modules in group to be sorted`,
-            fix(fixer) {
-                if (!first.range || !last.range) {
-                    return null;
-                }
-
-                return fixer.replaceTextRange(
-                    [first.range[0], last.range[1]],
-                    sorted.map((node) => source.getText(node)).join('\n'),
-                );
-            },
+            code: sorted.map((node) => source.getText(node)).join('\n'),
         });
     }
 }
@@ -52,22 +40,10 @@ function sortSpecifiers(
     const sorted = sortBy(specifiers, [configuration.specifier, 'name'], configuration);
 
     if (sorted.some((node, i) => node !== specifiers[i])) {
-        const first = specifiers[0];
-        const last = specifiers[specifiers.length - 1];
-
-        context.report({
-            node: last,
+        fixRange(context, {
+            range: extrema(specifiers),
             message: `Expected specifiers to be sorted`,
-            fix(fixer) {
-                if (!first.range || !last.range) {
-                    return null;
-                }
-
-                return fixer.replaceTextRange(
-                    [first.range[0], last.range[1]],
-                    sorted.map((node) => source.getText(node)).join(', '),
-                );
-            },
+            code: sorted.map((node) => source.getText(node)).join(', '),
         });
     }
 }

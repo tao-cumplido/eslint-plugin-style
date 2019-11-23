@@ -4,7 +4,7 @@ import builtinModules from 'builtin-modules';
 import { Rule } from 'eslint';
 import { ImportDeclaration } from 'estree';
 
-import { importDeclarations, linesBetween, sortBy } from '../util';
+import { extrema, fixRange, importDeclarations, linesBetween, sortBy } from '../util';
 
 export enum GroupClass {
     Node = '#NODE',
@@ -145,25 +145,11 @@ export const rule: Rule.RuleModule = {
             [[]],
         );
 
-        if (sorted.some(($, i) => $ !== imports[i])) {
-            const first = imports[0].node;
-            const last = imports[imports.length - 1].node;
-            context.report({
-                node: last,
+        if (sorted.some((node, i) => node !== imports[i])) {
+            fixRange(context, {
+                range: extrema(imports.map(({ node }) => node)),
                 message: `Expected import groups: ${groupLabels(groupConfiguration).join(', ')}`,
-                fix(fixer) {
-                    if (!first.range || !last.range) {
-                        return null;
-                    }
-
-                    const code = groups
-                        .map((nodes) => {
-                            return nodes.map((node) => source.getText(node)).join('\n');
-                        })
-                        .join('\n\n');
-
-                    return fixer.replaceTextRange([first.range[0], last.range[1]], code);
-                },
+                code: groups.map((nodes) => nodes.map((node) => source.getText(node)).join('\n')).join('\n\n'),
             });
         } else {
             groups.forEach((group, i) => {
