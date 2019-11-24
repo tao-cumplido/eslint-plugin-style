@@ -74,18 +74,20 @@ The following configuration options can be set:
 
 ```ts
 interface Configuration {
-    specifier?: 'imported' | 'local';
+    specifier?: 'source' | 'rename';
     locales?: string[];
     sensitivity?: 'base' | 'accent' | 'case' | 'variant';
     ignorePunctuation?: boolean;
     numeric?: boolean;
     caseFirst?: 'upper' | 'lower' | 'false';
     caseGroups?: boolean;
+    sortExports?: boolean;
 }
 ```
 
--   `specifier`: determines specifier priority, e.g. in `import { foo as bar } from 'baz'` `foo` is `'imported'` and `bar` is `'local'`
+-   `specifier`: determines specifier priority, e.g. in `import { foo as bar } from 'baz'` `foo` is `'source'` and `bar` is `'rename'`
 -   `caseGroups`: when `true`, import names need to be grouped by case before sorting
+-   `sortExports`: whether to sort deffered export groups, i.e. all statements that export from another module
 
 For all other possible settings, see [String#localeCompare](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare).
 
@@ -93,13 +95,14 @@ The default configuration is:
 
 ```json
 {
-    "specifier": "imported",
+    "specifier": "source",
     "locales": ["en-US"],
     "sensitivity": "variant",
     "ignorePunctuation": false,
     "numeric": true,
     "caseFirst": "lower",
-    "caseGroups": false
+    "caseGroups": false,
+    "sortExports": true
 }
 ```
 

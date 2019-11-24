@@ -1,52 +1,21 @@
-import { Rule, SourceCode } from 'eslint';
-import { ImportDeclaration, ImportSpecifier } from 'estree';
+import { Rule } from 'eslint';
+import { ExportSpecifier, ImportDeclaration, ImportSpecifier, Node } from 'estree';
 
 import { extrema, fixRange, importDeclarations, linesBetween, sortBy, SortOptions } from '../util';
+import { ExportFromDeclaration, exportFromDeclarations } from '../util/export-from-declarations';
 
 export interface Configuration extends SortOptions {
-    specifier: 'imported' | 'local';
+    specifier: 'source' | 'rename';
+    sortExports: boolean;
 }
 
 const defaultConfiguration: Configuration = {
-    specifier: 'imported',
+    specifier: 'source',
     locales: ['en-US'],
     numeric: true,
     caseFirst: 'lower',
+    sortExports: true,
 };
-
-function sortModules(
-    context: Rule.RuleContext,
-    source: SourceCode,
-    configuration: Configuration,
-    group: ImportDeclaration[],
-) {
-    const sorted = sortBy(group, ['source', 'value'], configuration);
-
-    if (sorted.some((node, i) => node !== group[i])) {
-        fixRange(context, {
-            range: extrema(group),
-            message: `Expected modules in group to be sorted`,
-            code: sorted.map((node) => source.getText(node)).join('\n'),
-        });
-    }
-}
-
-function sortSpecifiers(
-    context: Rule.RuleContext,
-    source: SourceCode,
-    configuration: Configuration,
-    specifiers: ImportSpecifier[],
-) {
-    const sorted = sortBy(specifiers, [configuration.specifier, 'name'], configuration);
-
-    if (sorted.some((node, i) => node !== specifiers[i])) {
-        fixRange(context, {
-            range: extrema(specifiers),
-            message: `Expected specifiers to be sorted`,
-            code: sorted.map((node) => source.getText(node)).join(', '),
-        });
-    }
-}
 
 export const rule: Rule.RuleModule = {
     meta: {
@@ -76,6 +45,12 @@ export const rule: Rule.RuleModule = {
                     caseGroups: {
                         type: 'boolean',
                     },
+                    specifier: {
+                        enum: ['source', 'rename'],
+                    },
+                    sortExports: {
+                        type: 'boolean',
+                    },
                 },
             },
         ],
@@ -85,30 +60,85 @@ export const rule: Rule.RuleModule = {
 
         const source = context.getSourceCode();
 
+        const partition = <T extends Node>(result: T[][], node: T, index: number, from: T[]) => {
+            if (index > 0 && linesBetween(from[index - 1], node) > 0) {
+                result.push([]);
+            }
+
+            result[result.length - 1].push(node);
+
+            return result;
+        };
+
+        const sortImportModules = (group: ImportDeclaration[]) => {
+            const sorted = sortBy(group, ['source', 'value'], configuration);
+
+            if (sorted.some((node, i) => node !== group[i])) {
+                fixRange(context, {
+                    range: extrema(group),
+                    message: `Expected modules in group to be sorted`,
+                    code: sorted.map((node) => source.getText(node)).join('\n'),
+                });
+            }
+        };
+
+        const sortImportSpecifiers = (specifiers: ImportSpecifier[]) => {
+            const from: 'imported' | 'local' = configuration.specifier === 'source' ? 'imported' : 'local';
+            const sorted = sortBy(specifiers, [from, 'name'], configuration);
+
+            if (sorted.some((node, i) => node !== specifiers[i])) {
+                fixRange(context, {
+                    range: extrema(specifiers),
+                    message: `Expected specifiers to be sorted`,
+                    code: sorted.map((node) => source.getText(node)).join(', '),
+                });
+            }
+        };
+
         importDeclarations(source)
-            .reduce<ImportDeclaration[][]>(
-                (result, node, index, imports) => {
-                    if (index > 0 && linesBetween(imports[index - 1], node) > 0) {
-                        result.push([]);
-                    }
-
-                    result[result.length - 1].push(node);
-
-                    return result;
-                },
-                [[]],
-            )
+            .reduce<ImportDeclaration[][]>(partition, [[]])
             .forEach((group) => {
-                sortModules(context, source, configuration, group);
+                sortImportModules(group);
                 group.forEach((node) => {
-                    sortSpecifiers(
-                        context,
-                        source,
-                        configuration,
+                    sortImportSpecifiers(
                         node.specifiers.filter(($): $ is ImportSpecifier => $.type === 'ImportSpecifier'),
                     );
                 });
             });
+
+        if (configuration.sortExports) {
+            const sortExportModules = (group: ExportFromDeclaration[]) => {
+                const sorted = sortBy(group, ['source', 'value'], configuration);
+
+                if (sorted.some((node, i) => node !== group[i])) {
+                    fixRange(context, {
+                        range: extrema(group),
+                        message: `Expected modules in group to be sorted`,
+                        code: sorted.map((node) => source.getText(node)).join('\n'),
+                    });
+                }
+            };
+
+            const sortExportSpecifiers = (specifiers: ExportSpecifier[]) => {
+                const from: 'exported' | 'local' = configuration.specifier === 'source' ? 'local' : 'exported';
+                const sorted = sortBy(specifiers, [from, 'name'], configuration);
+
+                if (sorted.some((node, i) => node !== specifiers[i])) {
+                    fixRange(context, {
+                        range: extrema(specifiers),
+                        message: `Expected specifiers to be sorted`,
+                        code: sorted.map((node) => source.getText(node)).join(', '),
+                    });
+                }
+            };
+
+            exportFromDeclarations(source)
+                .reduce<ExportFromDeclaration[][]>(partition, [[]])
+                .forEach((group) => {
+                    sortExportModules(group);
+                    group.forEach((node) => sortExportSpecifiers(node.specifiers ?? []));
+                });
+        }
 
         return {};
     },

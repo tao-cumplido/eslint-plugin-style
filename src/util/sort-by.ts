@@ -92,11 +92,7 @@ export function sortBy<T extends object>(sources: T[], path: ReadonlyArray<strin
     caseGroups.lower.sort(sort(options));
 
     return [
-        ...(options?.caseFirst === 'upper' ? caseGroups.upper : caseGroups.lower)
-            .sort(sort(options))
-            .map(({ source }) => source),
-        ...(options?.caseFirst === 'upper' ? caseGroups.lower : caseGroups.upper)
-            .sort(sort(options))
-            .map(({ source }) => source),
+        ...(options?.caseFirst === 'upper' ? caseGroups.upper : caseGroups.lower).map(({ source }) => source),
+        ...(options?.caseFirst === 'upper' ? caseGroups.lower : caseGroups.upper).map(({ source }) => source),
     ];
 }

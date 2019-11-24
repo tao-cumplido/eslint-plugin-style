@@ -5,7 +5,7 @@ describe('rule: sort', () => {
     const reporter = new LintReporter<Configuration>(rule);
 
     describe('valid code', () => {
-        test('no imports', () => {
+        test('no imports/exports', () => {
             const report = reporter.lint('');
             expect(report.result).toEqual(LintResult.Valid);
         });
@@ -14,6 +14,9 @@ describe('rule: sort', () => {
             const report = reporter.lint(javascript`
                 import 'bar';
                 import 'foo';
+
+                export * from 'bar';
+                export * from 'foo';
             `);
 
             expect(report.result).toEqual(LintResult.Valid);
@@ -52,6 +55,15 @@ describe('rule: sort', () => {
 
             expect(report.result).toEqual(LintResult.Valid);
         });
+
+        test('ignore local exports', () => {
+            const report = reporter.lint(javascript`
+                export const foo = 1;
+                export const bar = 2;
+            `);
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
     });
 
     describe('invalid code', () => {
@@ -59,25 +71,35 @@ describe('rule: sort', () => {
             const report = reporter.lint(javascript`
                 import 'foo';
                 import 'bar';
+
+                export * from 'foo';
+                export * from 'bar';
             `);
 
             expect(report.result).toEqual(LintResult.Fixed);
-            expect(report.errors).toHaveLength(1);
+            expect(report.errors).toHaveLength(2);
             expect(report.code).toEqual(javascript`
                 import 'bar';
                 import 'foo';
+
+                export * from 'bar';
+                export * from 'foo';
             `);
         });
 
         test('unsorted specifiers', () => {
             const report = reporter.lint(javascript`
                 import { b, a } from 'foo';
+
+                export { b, a } from 'foo';
             `);
 
             expect(report.result).toEqual(LintResult.Fixed);
-            expect(report.errors).toHaveLength(1);
+            expect(report.errors).toHaveLength(2);
             expect(report.code).toEqual(javascript`
                 import { a, b } from 'foo';
+
+                export { a, b } from 'foo';
             `);
         });
 
@@ -151,7 +173,7 @@ describe('rule: sort', () => {
                     import { a as b, b as a } from 'foo';
                 `,
                 {
-                    specifier: 'local',
+                    specifier: 'rename',
                 },
             );
 
