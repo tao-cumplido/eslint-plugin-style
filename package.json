@@ -1,6 +1,6 @@
 {
     "name": "eslint-plugin-module-imports",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "ESLint plugin for ES6 style module imports.",
     "keywords": [
         "eslint",
