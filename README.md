@@ -87,7 +87,7 @@ interface Configuration {
 
 -   `specifier`: determines specifier priority, e.g. in `import { foo as bar } from 'baz'` `foo` is `'source'` and `bar` is `'rename'`
 -   `caseGroups`: when `true`, import names need to be grouped by case before sorting
--   `sortExports`: whether to sort deffered export groups, i.e. all statements that export from another module
+-   `sortExports`: whether to sort deferred export groups, i.e. all statements that export from another module
 
 For all other possible settings, see [String#localeCompare](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare).
 
