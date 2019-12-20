@@ -22,6 +22,20 @@ describe('rule: sort', () => {
             expect(report.result).toEqual(LintResult.Valid);
         });
 
+        test('scoped first', () => {
+            const report = reporter.lint(
+                javascript`
+                    import '@angular/core';
+                    import 'rxjs';
+                `,
+                {
+                    caseGroups: true,
+                },
+            );
+
+            expect(report.result).toEqual(LintResult.Valid);
+        });
+
         test('separate groups', () => {
             const report = reporter.lint(javascript`
                 import 'foo';

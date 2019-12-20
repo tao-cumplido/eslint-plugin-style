@@ -9,6 +9,7 @@ interface Sortable<T> {
 }
 
 interface CaseGroups<T> {
+    punctuation: Array<Sortable<T>>;
     upper: Array<Sortable<T>>;
     lower: Array<Sortable<T>>;
 }
@@ -70,28 +71,33 @@ export function sortBy<T extends object>(sources: T[], path: ReadonlyArray<strin
                 sortValue,
             };
 
-            if (
-                options?.caseGroups &&
-                typeof sortValue === 'string' &&
-                sortValue[0].toLocaleUpperCase(options?.locales) === sortValue[0]
-            ) {
-                groups.upper.push(sortable);
-            } else {
-                groups.lower.push(sortable);
+            let target = groups.lower;
+
+            if (options?.caseGroups && typeof sortValue === 'string') {
+                if (/^[@$_]/.test(sortValue)) {
+                    target = groups.punctuation;
+                } else if (sortValue[0].toLocaleUpperCase(options?.locales) === sortValue[0]) {
+                    target = groups.upper;
+                }
             }
+
+            target.push(sortable);
 
             return groups;
         },
         {
+            punctuation: [],
             upper: [],
             lower: [],
         },
     );
 
+    caseGroups.punctuation.sort(sort(options));
     caseGroups.upper.sort(sort(options));
     caseGroups.lower.sort(sort(options));
 
     return [
+        ...caseGroups.punctuation.map(({ source }) => source),
         ...(options?.caseFirst === 'upper' ? caseGroups.upper : caseGroups.lower).map(({ source }) => source),
         ...(options?.caseFirst === 'upper' ? caseGroups.lower : caseGroups.upper).map(({ source }) => source),
     ];
