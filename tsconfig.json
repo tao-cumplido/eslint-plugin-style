@@ -1,15 +1,15 @@
 {
-    "compilerOptions": {
-        "strict": true,
-        "noUnusedParameters": true,
-        "esModuleInterop": true,
-        "target": "es6",
-        "module": "commonjs",
-        "typeRoots": ["node_modules/@types"],
-        "lib": ["es2019"],
-        "importHelpers": true,
-        "outDir": "dist"
-    },
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules", "dist"]
+	"compilerOptions": {
+		"strict": true,
+		"noUnusedParameters": true,
+		"esModuleInterop": true,
+		"target": "es6",
+		"module": "commonjs",
+		"typeRoots": ["node_modules/@types"],
+		"lib": ["es2019"],
+		"importHelpers": true,
+		"outDir": "dist"
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules", "dist"]
 }

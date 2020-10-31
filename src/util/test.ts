@@ -1,66 +1,72 @@
-import { Linter, Rule } from 'eslint';
+import { Linter } from 'eslint';
 
-export function javascript([code]: TemplateStringsArray) {
-    return code
-        .split('\n')
-        .map((line) => line.trim())
-        .join('\n');
+import type { RuleModule } from './types';
+
+type PartialMap<T extends unknown[]> = {
+	[P in keyof T]: Partial<T[P]>;
+};
+
+export function javascript([code]: TemplateStringsArray): string {
+	return code
+		.split('\n')
+		.map((line) => line.trim())
+		.join('\n');
 }
 
 export enum LintResult {
-    Valid = 'valid',
-    Invalid = 'invalid',
-    Fixed = 'fixed',
+	Valid = 'valid',
+	Invalid = 'invalid',
+	Fixed = 'fixed',
 }
 
 export interface LintReport {
-    result: LintResult;
-    code: string;
-    errors: string[];
+	result: LintResult;
+	code: string;
+	errors: string[];
 }
 
-export class LintReporter<T extends object = object> {
-    private linter = new Linter();
+export class LintReporter<Configuration extends unknown[]> {
+	private readonly linter = new Linter();
 
-    constructor(rule: Rule.RuleModule) {
-        this.linter.defineRule('test', rule);
-    }
+	constructor(rule: RuleModule<Configuration>) {
+		this.linter.defineRule('test', rule);
+	}
 
-    lint(code: string, options?: Partial<T>): LintReport {
-        const config: Linter.Config = {
-            parserOptions: {
-                ecmaVersion: 2018,
-                sourceType: 'module',
-            },
-            rules: {
-                test: ['error', options],
-            },
-        };
+	lint(code: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>): LintReport {
+		const config: Linter.Config = {
+			parserOptions: {
+				ecmaVersion: 2018,
+				sourceType: 'module',
+			},
+			rules: {
+				test: ['error', ...options],
+			},
+		};
 
-        const errorReport = this.linter.verify(code, config);
+		const errorReport = this.linter.verify(code, config);
 
-        if (errorReport.some(({ fatal }) => fatal)) {
-            throw new Error(`parsing error before fix`);
-        }
+		if (errorReport.some(({ fatal }) => fatal)) {
+			throw new Error('parsing error before fix');
+		}
 
-        const fixReport = this.linter.verifyAndFix(code, config);
+		const fixReport = this.linter.verifyAndFix(code, config);
 
-        if (fixReport.messages.some(({ fatal }) => fatal)) {
-            throw new Error(`parsing error after fix`);
-        }
+		if (fixReport.messages.some(({ fatal }) => fatal)) {
+			throw new Error('parsing error after fix');
+		}
 
-        let result = LintResult.Valid;
+		let result = LintResult.Valid;
 
-        if (fixReport.fixed) {
-            result = LintResult.Fixed;
-        } else if (errorReport.length > 0) {
-            result = LintResult.Invalid;
-        }
+		if (fixReport.fixed) {
+			result = LintResult.Fixed;
+		} else if (errorReport.length > 0) {
+			result = LintResult.Invalid;
+		}
 
-        return {
-            result,
-            code: fixReport.output,
-            errors: errorReport.map(({ message }) => message),
-        };
-    }
+		return {
+			result,
+			code: fixReport.output,
+			errors: errorReport.map(({ message }) => message),
+		};
+	}
 }

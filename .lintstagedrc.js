@@ -1,5 +1,5 @@
 module.exports = {
-    '*.{json,js,ts,md}': ['prettier --write', 'git add'],
-    '*.{js,ts}': 'eslint',
-    '.eslintrc.js': 'npm run lint',
+	'*.{json,md}': ['prettier --write', 'git add'],
+	'*.{js,ts}': 'eslint',
+	'.eslintrc.js': 'yarn run lint',
 };

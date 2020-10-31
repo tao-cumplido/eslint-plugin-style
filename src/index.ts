@@ -1,9 +1,9 @@
-import { Rule } from 'eslint';
+import type { Rule } from 'eslint';
 
-import { rule as group } from './rules/group';
-import { rule as sort } from './rules/sort';
+import { rule as groupImports } from './rules/group-imports';
+import { rule as sortImports } from './rules/sort-imports';
 
 export const rules: Record<string, Rule.RuleModule> = {
-    group,
-    sort,
+	'group-imports': groupImports,
+	'sort-imports': sortImports,
 };
