@@ -30,13 +30,14 @@ export class LintReporter<Configuration extends unknown[]> {
 		this.linter.defineRule('test', rule);
 	}
 
-	lint(code: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>, linterConfig?: Linter.Config): LintReport {
+	lint(code: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>, linterConfig?: Linter.Config, filename?: string): LintReport {
 		const config: Linter.Config = {
+			...linterConfig,
 			parserOptions: {
 				ecmaVersion: 2018,
 				sourceType: 'module',
+				...linterConfig?.parserOptions,
 			},
-			...linterConfig,
 			rules: {
 				test: ['error', ...options],
 			},
@@ -47,13 +48,13 @@ export class LintReporter<Configuration extends unknown[]> {
 			this.linter.defineParser(config.parser, require(config.parser));
 		}
 
-		const errorReport = this.linter.verify(code, config);
+		const errorReport = this.linter.verify(code, config, filename);
 
 		if (errorReport.some(({ fatal }) => fatal)) {
 			throw new Error('parsing error before fix');
 		}
 
-		const fixReport = this.linter.verifyAndFix(code, config);
+		const fixReport = this.linter.verifyAndFix(code, config, filename);
 
 		if (fixReport.messages.some(({ fatal }) => fatal)) {
 			throw new Error('parsing error after fix');
