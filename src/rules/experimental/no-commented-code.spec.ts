@@ -1,3 +1,5 @@
+import path from 'path';
+
 import { javascript, LintReporter, LintResult } from '../../util/test';
 import { rule } from './no-commented-code';
 
@@ -108,6 +110,26 @@ describe('rule: no-commented-code', () => {
 				`,
 				[],
 				{ parser: '@typescript-eslint/parser' },
+			);
+
+			expect(report.result).toEqual(LintResult.Invalid);
+			expect(report.errors).toHaveLength(1);
+		});
+
+		test('typescript project', () => {
+			const report = reporter.lint(
+				javascript`
+					// type Foo<T> = T;
+				`,
+				[],
+				{
+					parser: '@typescript-eslint/parser',
+					parserOptions: {
+						project: path.resolve(__dirname, 'no-commented-code.tsconfig.json'),
+						tsconfigRootDir: __dirname,
+					},
+				},
+				path.resolve(__dirname, 'test.ts'),
 			);
 
 			expect(report.result).toEqual(LintResult.Invalid);

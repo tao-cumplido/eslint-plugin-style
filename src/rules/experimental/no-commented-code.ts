@@ -83,7 +83,10 @@ export const rule: RuleModule<[Configuration]> = {
 
 			try {
 				const parse = parser.parse ?? parser.parseForESLint;
-				parse?.(lines.join('\n'), context.parserOptions);
+				parse?.(lines.join('\n'), {
+					...context.parserOptions,
+					filePath: context.getFilename(), // necessary for typescript projects that have 'project' set in 'parserOptions'
+				});
 				context.report({
 					loc: comment.loc,
 					message: `comment contains code: ${comment.value}`,
