@@ -1,6 +1,6 @@
 {
 	"name": "eslint-plugin-style",
-	"version": "0.0.8",
+	"version": "0.0.10",
 	"description": "ESLint plugin for different stylistic issues",
 	"keywords": [
 		"eslint",
@@ -13,8 +13,8 @@
 	],
 	"license": "ISC",
 	"author": "Tao Cumplido",
-	"repository": "gitlab:tacugo/eslint-plugin-module-imports",
-	"bugs": "https://gitlab.com/tacugo/eslint-plugin-module-imports/issues",
+	"repository": "https://github.com/tao-cumplido/eslint-plugin-style",
+	"bugs": "https://github.com/tao-cumplido/eslint-plugin-style/issues",
 	"files": [
 		"README.md",
 		"dist/**/*"
