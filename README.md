@@ -41,10 +41,10 @@ interface Configuration {
 
 where `string` can be a package name, a scope name or one of the following tokens:
 
--  `#NODE`: all node builtin packages like `fs` and `path`
--  `#EXTERNAL`: all other declared dependencies, e.g. `lodash`, `react`, etc.
--  `#RELATIVE`: all relative imports
--  `#ABSOLUTE`: all absolute imports, never seen a project use these, but it's possible
+-  `#NODE`: All node builtin packages like `fs` and `path`.
+-  `#EXTERNAL`: All other declared dependencies, e.g. `lodash`, `react`, etc.
+-  `#RELATIVE`: All relative imports.
+-  `#ABSOLUTE`: All absolute imports, never seen a project use these, but it's possible.
 
 The default configuration is:
 
@@ -83,9 +83,9 @@ interface Configuration {
 }
 ```
 
--  `specifier`: determines specifier priority, e.g. in `import { foo as bar } from 'baz'` `foo` is `'source'` and `bar` is `'rename'`
--  `caseGroups`: when `true`, import names need to be grouped by case before sorting
--  `sortExports`: whether to sort deferred export groups, i.e. all statements that export from another module
+-  `specifier`: Determines specifier priority, e.g. in `import { foo as bar } from 'baz'` `foo` is `'source'` and `bar` is `'rename'`.
+-  `caseGroups`: When `true`, import names need to be grouped by case before sorting.
+-  `sortExports`: Whether to sort deferred export groups, i.e. all statements that export from another module.
 
 For all other possible settings, see [String#localeCompare](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare).
 
@@ -101,6 +101,40 @@ The default configuration is:
 	"caseFirst": "lower",
 	"caseGroups": false,
 	"sortExports": true
+}
+```
+
+## Experimental rules
+
+:warning: These rules are experimental and may produce unexpected behavior. These rules are not auto-fixable! :warning:
+
+### `style/experimental/no-commented-code`
+
+This rule is meant to detect commented code. It does so by uncommenting a comment node and run the whole file with the uncommented part through the parser.
+If the parser produces a valid AST the comment is marked as commented code. Generally it should work with any parser, for example, `// type A = 0;` is not
+commented code with the default parser `espree` but it is with `@typescript-eslint/parser`.
+
+False positives will probably happen, single words for example, are valid identifiers in most positions. And `// eslint-disable-next-line` is parsed as a
+`BinaryExpression`. Common patterns can be ignored and `^eslint-` is ignored by default.
+
+The following configuration options can be set:
+
+```ts
+interface Configuration {
+	ignorePatterns?: string[];
+	extendDefaultIgnorePatterns?: boolean;
+}
+```
+
+-  `ignorePatterns`: When a comment matches one of the specified patterns it will be ignored. The expressions are tested against the trimmed text content of the comment. Invalid regular expressions will be ignored.
+-  `extendDefaultIgnorePatterns`: Whether to keep the default ignore patterns without explicitly redefining them.
+
+The default configuration is:
+
+```json
+{
+	"ignorePatterns": ["^eslint-", "^@ts-"],
+	"extendDefaultIgnorePatterns": false
 }
 ```
 

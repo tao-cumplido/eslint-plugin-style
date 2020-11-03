@@ -1,10 +1,8 @@
 import { Linter } from 'eslint';
 
-import type { RuleModule } from './types';
+import type { PartialMap, RuleModule } from './types';
 
-type PartialMap<T extends unknown[]> = {
-	[P in keyof T]: Partial<T[P]>;
-};
+
 
 export function javascript([code]: TemplateStringsArray): string {
 	return code
@@ -32,16 +30,22 @@ export class LintReporter<Configuration extends unknown[]> {
 		this.linter.defineRule('test', rule);
 	}
 
-	lint(code: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>): LintReport {
+	lint(code: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>, linterConfig?: Linter.Config): LintReport {
 		const config: Linter.Config = {
 			parserOptions: {
 				ecmaVersion: 2018,
 				sourceType: 'module',
 			},
+			...linterConfig,
 			rules: {
 				test: ['error', ...options],
 			},
 		};
+
+		if (config.parser) {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			this.linter.defineParser(config.parser, require(config.parser));
+		}
 
 		const errorReport = this.linter.verify(code, config);
 

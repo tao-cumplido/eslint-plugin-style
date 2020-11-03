@@ -1,10 +1,14 @@
 import type { Rule } from 'eslint';
 
+export type PartialMap<T extends unknown[]> = {
+	[P in keyof T]?: Partial<T[P]>;
+};
+
 // https://github.com/typescript-eslint/typescript-eslint/issues/1868
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 export interface RuleContext<Configuration extends unknown[]> extends Rule.RuleContext {
-	options: Partial<Configuration>;
+	options: PartialMap<Configuration>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
