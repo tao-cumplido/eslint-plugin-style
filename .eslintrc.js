@@ -290,7 +290,7 @@ module.exports = {
 		// plugins
 		'style/group-imports': [2],
 		'style/sort-imports': [2, { caseGroups: true }],
-		'style/experimental/no-commente-code': [2],
+		'style/experimental/no-commented-code': [2, { ignorePatterns: ['^https?://'], extendDefaultIgnorePatterns: true }],
 		'no-only-tests/no-only-tests': [2],
 	},
 	overrides: [
