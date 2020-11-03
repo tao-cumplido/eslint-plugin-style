@@ -1460,18 +1460,18 @@ escodegen@^1.14.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-module-imports@^0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-module-imports/-/eslint-plugin-module-imports-0.0.8.tgz#964e0f1093608401e8242b18c17808cbc0224d95"
-  integrity sha512-FfqaUp6pjEQ9Lcefa3RzaYvl2vFya4whHEG5acgstCAlGZtIlEiZ8sK1JUTaEk0CROy0uMhL5Lm6Qz6ZD8J11Q==
-  dependencies:
-    builtin-modules "^3.1.0"
-    tslib "^1.10.0"
-
 eslint-plugin-no-only-tests@^2.4.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-no-only-tests/-/eslint-plugin-no-only-tests-2.4.0.tgz#7d565434aa7d16ccc7eea957c391d98f827332ca"
   integrity sha512-azP9PwQYfGtXJjW273nIxQH9Ygr+5/UyeW2wEjYoDtVYPI+WPKwbj0+qcAKYUXFZLRumq4HKkFaoDBAwBoXImQ==
+
+eslint-plugin-style@^0.0.10:
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-style/-/eslint-plugin-style-0.0.10.tgz#4f306a40d77faa1e26be2c5b6a5e3c9b8dbad933"
+  integrity sha512-mvL7sf6X4E24T2HX7C142L2HNip4AqMptChbMP4RjTpHBeNjK3bvFDQ7ZIAl7/HMEwAf6VOG4IZAXXdUf2JxiQ==
+  dependencies:
+    builtin-modules "^3.1.0"
+    tslib "^2.0.3"
 
 eslint-scope@^5.0.0, eslint-scope@^5.1.1:
   version "5.1.1"
@@ -4132,7 +4132,7 @@ ts-jest@^26.4.3:
     semver "7.x"
     yargs-parser "20.x"
 
-tslib@^1.10.0, tslib@^1.8.1, tslib@^1.9.0:
+tslib@^1.8.1, tslib@^1.9.0:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==

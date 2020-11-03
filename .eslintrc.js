@@ -1,5 +1,5 @@
 module.exports = {
-	plugins: ['module-imports', 'no-only-tests'],
+	plugins: ['style', 'no-only-tests'],
 	env: {
 		es2020: true,
 	},
@@ -288,8 +288,9 @@ module.exports = {
 		'template-curly-spacing': [2, 'never'],
 		'yield-star-spacing': [2, { before: false, after: true }],
 		// plugins
-		'module-imports/group': [2],
-		'module-imports/sort': [2, { caseGroups: true }],
+		'style/group-imports': [2],
+		'style/sort-imports': [2, { caseGroups: true }],
+		'style/experimental/no-commente-code': [2],
 		'no-only-tests/no-only-tests': [2],
 	},
 	overrides: [
