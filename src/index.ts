@@ -7,5 +7,5 @@ import { rule as sortImports } from './rules/sort-imports';
 export const rules: Record<string, Rule.RuleModule> = {
 	'group-imports': groupImports,
 	'sort-imports': sortImports,
-	'experimental/no-commente-code': noCommentedCode,
+	'experimental/no-commented-code': noCommentedCode,
 };
