@@ -86,6 +86,7 @@ export const rule: RuleModule<[Configuration]> = {
 				parse?.(lines.join('\n'), {
 					...context.parserOptions,
 					filePath: context.getFilename(), // necessary for typescript projects that have 'project' set in 'parserOptions'
+					range: true, // workaround for some typescript code: https://github.com/typescript-eslint/typescript-eslint/issues/2742
 				});
 				context.report({
 					loc: comment.loc,

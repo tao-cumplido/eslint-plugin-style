@@ -2,8 +2,6 @@ import { Linter } from 'eslint';
 
 import type { PartialMap, RuleModule } from './types';
 
-
-
 export function javascript([code]: TemplateStringsArray): string {
 	return code
 		.split('\n')
@@ -21,6 +19,13 @@ export interface LintReport {
 	result: LintResult;
 	code: string;
 	errors: string[];
+}
+
+export class AggregateError extends Error {
+	readonly name = 'AggregateError';
+	constructor(readonly errors: readonly Error[], readonly message: string) {
+		super(message);
+	}
 }
 
 export class LintReporter<Configuration extends unknown[]> {
@@ -49,15 +54,17 @@ export class LintReporter<Configuration extends unknown[]> {
 		}
 
 		const errorReport = this.linter.verify(code, config, filename);
+		const fatalParsingErrors = errorReport.filter(({ fatal }) => fatal).map(({ message }) => new Error(message));
 
-		if (errorReport.some(({ fatal }) => fatal)) {
-			throw new Error('parsing error before fix');
+		if (fatalParsingErrors.length) {
+			throw new AggregateError(fatalParsingErrors, 'parsing error before fix');
 		}
 
 		const fixReport = this.linter.verifyAndFix(code, config, filename);
+		const fatalFixErrors = fixReport.messages.filter(({ fatal }) => fatal).map(({ message }) => new Error(message));
 
-		if (fixReport.messages.some(({ fatal }) => fatal)) {
-			throw new Error('parsing error after fix');
+		if (fatalFixErrors.length) {
+			throw new AggregateError(fatalFixErrors, 'parsing error after fix');
 		}
 
 		let result = LintResult.Valid;

@@ -1,10 +1,22 @@
 import path from 'path';
 
-import { javascript, LintReporter, LintResult } from '../../util/test';
+import { javascript, AggregateError, LintReporter, LintResult } from '../../util/test';
 import { rule } from './no-commented-code';
 
 describe('rule: no-commented-code', () => {
 	const reporter = new LintReporter(rule);
+
+	const tsParser = {
+		parser: '@typescript-eslint/parser',
+	};
+
+	const tsParserProject = {
+		...tsParser,
+		parserOptions: {
+			project: path.resolve(__dirname, 'no-commented-code.tsconfig.json'),
+			tsconfigRootDir: __dirname,
+		},
+	};
 
 	describe('valid code', () => {
 		test('no comments', () => {
@@ -22,11 +34,20 @@ describe('rule: no-commented-code', () => {
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 
-		test('line comments', () => {
+		test('line comments (JS)', () => {
 			const report = reporter.lint(javascript`
 				// hello world
 				console.log(0); // !
 			`);
+
+			expect(report.result).toEqual(LintResult.Valid);
+		});
+
+		test('line comments (TS)', () => {
+			const report = reporter.lint(javascript`
+				// hello world
+				console.log(0); // !
+			`, [], tsParser);
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
@@ -41,11 +62,16 @@ describe('rule: no-commented-code', () => {
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 
-		test('commented typescript', () => {
+		test('commented typescript in js is valid', () => {
 			const report = reporter.lint(javascript`
 				// type Foo<T> = T;
 			`);
 
+			expect(report.result).toEqual(LintResult.Valid);
+		});
+
+		test('typescript project valid file', () => {
+			const report = reporter.lint('', [], tsParserProject, 'valid.ts');
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 	});
@@ -109,28 +135,31 @@ describe('rule: no-commented-code', () => {
 					// type Foo<T> = T;
 				`,
 				[],
-				{ parser: '@typescript-eslint/parser' },
+				tsParser,
 			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
 		});
 
-		test('typescript project', () => {
-			const report = reporter.lint(
-				javascript`
-					// type Foo<T> = T;
-				`,
-				[],
-				{
-					parser: '@typescript-eslint/parser',
-					parserOptions: {
-						project: path.resolve(__dirname, 'no-commented-code.tsconfig.json'),
-						tsconfigRootDir: __dirname,
-					},
-				},
-				path.resolve(__dirname, 'test.ts'),
-			);
+		test('typescript project invalid file', () => {
+			expect.assertions(2);
+
+			try {
+				reporter.lint('', [], tsParserProject, path.resolve(__dirname, 'invalid.ts'));
+			} catch (error: unknown) {
+				if (error instanceof AggregateError) {
+					expect(error.errors).toHaveLength(1);
+					expect(error.errors[0].message).toContain('parserOptions.project');
+				}
+			}
+		});
+
+		test('urls can be detected as labeled statement', () => {
+			const report = reporter.lint(javascript`
+				// https://www.example.com/
+				{}
+			`);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
