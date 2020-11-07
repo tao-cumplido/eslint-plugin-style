@@ -2,11 +2,12 @@ import { Linter } from 'eslint';
 
 import type { PartialMap, RuleModule } from './types';
 
-export function javascript([code]: TemplateStringsArray): string {
-	return code
+export function code([source]: TemplateStringsArray): string {
+	return source
 		.split('\n')
 		.map((line) => line.trim())
-		.join('\n');
+		.join('\n')
+		.trim();
 }
 
 export enum LintResult {
@@ -35,7 +36,7 @@ export class LintReporter<Configuration extends unknown[]> {
 		this.linter.defineRule('test', rule);
 	}
 
-	lint(code: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>, linterConfig?: Linter.Config, filename?: string): LintReport {
+	lint(source: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>, linterConfig?: Linter.Config, filename?: string): LintReport {
 		const config: Linter.Config = {
 			...linterConfig,
 			parserOptions: {
@@ -53,14 +54,14 @@ export class LintReporter<Configuration extends unknown[]> {
 			this.linter.defineParser(config.parser, require(config.parser));
 		}
 
-		const errorReport = this.linter.verify(code, config, filename);
+		const errorReport = this.linter.verify(source, config, filename);
 		const fatalParsingErrors = errorReport.filter(({ fatal }) => fatal).map(({ message }) => new Error(message));
 
 		if (fatalParsingErrors.length) {
 			throw new AggregateError(fatalParsingErrors, 'parsing error before fix');
 		}
 
-		const fixReport = this.linter.verifyAndFix(code, config, filename);
+		const fixReport = this.linter.verifyAndFix(source, config, filename);
 		const fatalFixErrors = fixReport.messages.filter(({ fatal }) => fatal).map(({ message }) => new Error(message));
 
 		if (fatalFixErrors.length) {

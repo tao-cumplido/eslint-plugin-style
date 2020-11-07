@@ -1,4 +1,4 @@
-import { javascript, LintReporter, LintResult } from '../util/test';
+import { code, LintReporter, LintResult } from '../util/test';
 import { rule, GroupClass } from './group-imports';
 
 describe('rule: group', () => {
@@ -11,7 +11,7 @@ describe('rule: group', () => {
 		});
 
 		test('default groups', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'fs';
 				import 'path';
 
@@ -29,7 +29,7 @@ describe('rule: group', () => {
 
 		test('custom group order', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import 'foo';
 
 					import 'fs';
@@ -46,7 +46,7 @@ describe('rule: group', () => {
 
 		test('explicit package precedence', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import 'fs';
 
 					import 'foo';
@@ -65,7 +65,7 @@ describe('rule: group', () => {
 
 		test('mixed groups', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import 'fs';
 					import 'foo';
 					import 'path';
@@ -83,14 +83,14 @@ describe('rule: group', () => {
 
 	describe('invalid code', () => {
 		test('missing new line between groups', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'fs';
 				import 'foo';
 			`);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 
 				import 'foo';
@@ -98,7 +98,7 @@ describe('rule: group', () => {
 		});
 
 		test('too many lines between groups', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'fs';
 
 
@@ -107,7 +107,7 @@ describe('rule: group', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 
 				import 'foo';
@@ -115,7 +115,7 @@ describe('rule: group', () => {
 		});
 
 		test('invalid new line in group', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'fs';
 
 				import 'path';
@@ -123,14 +123,14 @@ describe('rule: group', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 				import 'path';
 			`);
 		});
 
 		test('wrong group order', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'foo';
 
 				import 'fs';
@@ -138,7 +138,7 @@ describe('rule: group', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 
 				import 'foo';
@@ -146,7 +146,7 @@ describe('rule: group', () => {
 		});
 
 		test('ungrouped', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import './bar';
 				import 'foo';
 				import 'fs';
@@ -154,7 +154,7 @@ describe('rule: group', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 
 				import 'foo';
@@ -164,7 +164,7 @@ describe('rule: group', () => {
 		});
 
 		test('delimited group', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'foo';
 
 				import 'fs';
@@ -175,7 +175,7 @@ describe('rule: group', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 				import 'path';
 
@@ -185,7 +185,7 @@ describe('rule: group', () => {
 		});
 
 		test('separated groups', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'fs';
 
 				import 'path';
@@ -197,7 +197,7 @@ describe('rule: group', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(2);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 				import 'path';
 
@@ -207,7 +207,7 @@ describe('rule: group', () => {
 		});
 
 		test('invalid new lines and missing new lines', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'fs';
 
 				import 'path';
@@ -218,7 +218,7 @@ describe('rule: group', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(3);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 				import 'path';
 
@@ -229,7 +229,7 @@ describe('rule: group', () => {
 
 		test('scope group and implicit catch-all-group', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import 'foo/a';
 					import 'fs';
 					import 'foo/b';
@@ -248,7 +248,7 @@ describe('rule: group', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'fs';
 				import '/';
 

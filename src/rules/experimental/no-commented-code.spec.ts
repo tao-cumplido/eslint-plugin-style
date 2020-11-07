@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { javascript, AggregateError, LintReporter, LintResult } from '../../util/test';
+import { code, AggregateError, LintReporter, LintResult } from '../../util/test';
 import { rule } from './no-commented-code';
 
 describe('rule: no-commented-code', () => {
@@ -25,7 +25,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('docstyle comment can contain code', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				/**
 				 * const foo = 1;
 				 */
@@ -35,7 +35,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('line comments (JS)', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				// hello world
 				console.log(0); // !
 			`);
@@ -44,7 +44,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('line comments (TS)', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				// hello world
 				console.log(0); // !
 			`, [], tsParser);
@@ -53,7 +53,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('directive comments', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				// @ts-expect-error
 				// eslint-disable-next-line
 				// const foo = 1;
@@ -63,7 +63,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('commented typescript in js is valid', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				// type Foo<T> = T;
 			`);
 
@@ -78,7 +78,7 @@ describe('rule: no-commented-code', () => {
 
 	describe('invalid code', () => {
 		test('single line comment', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				// console.log(0);
 			`);
 
@@ -87,7 +87,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('single block comment on one line', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				/* console.log(0); */
 			`);
 
@@ -96,7 +96,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('single block comment over multiple lines', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				/*
 				const foo = 0;
 				console.log(foo);
@@ -108,7 +108,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('multiple block comments on one line', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				console.log(0, /* 1, */ 2, /* 3 */);
 			`);
 
@@ -117,7 +117,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('commented entry in multiline list', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				const foo = [
 					0,
 					// 1,
@@ -131,7 +131,7 @@ describe('rule: no-commented-code', () => {
 
 		test('typescript parser', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					// type Foo<T> = T;
 				`,
 				[],
@@ -156,7 +156,7 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('urls can be detected as labeled statement', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				// https://www.example.com/
 				{}
 			`);
@@ -167,7 +167,7 @@ describe('rule: no-commented-code', () => {
 
 		test('ignore patterns', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					// foo.toString();
 					// bar.toString();
 				`,

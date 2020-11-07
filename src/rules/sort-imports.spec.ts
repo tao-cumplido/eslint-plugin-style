@@ -1,4 +1,4 @@
-import { javascript, LintReporter, LintResult } from '../util/test';
+import { code, LintReporter, LintResult } from '../util/test';
 import { rule } from './sort-imports';
 
 describe('rule: sort imports', () => {
@@ -11,7 +11,7 @@ describe('rule: sort imports', () => {
 		});
 
 		test('sorted modules', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'bar';
 				import 'foo';
 
@@ -24,7 +24,7 @@ describe('rule: sort imports', () => {
 
 		test('scoped first', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import '@angular/core';
 					import 'rxjs';
 				`,
@@ -39,7 +39,7 @@ describe('rule: sort imports', () => {
 		});
 
 		test('separate groups', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'foo';
 
 				import 'bar';
@@ -49,7 +49,7 @@ describe('rule: sort imports', () => {
 		});
 
 		test('sorted specifiers', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import { a, b } from 'foo';
 			`);
 
@@ -57,7 +57,7 @@ describe('rule: sort imports', () => {
 		});
 
 		test('2 < 10', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import { a2, a10 } from 'foo';
 			`);
 
@@ -65,7 +65,7 @@ describe('rule: sort imports', () => {
 		});
 
 		test('renamed specifiers', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import { a as b, b as a} from 'foo';
 			`);
 
@@ -73,7 +73,7 @@ describe('rule: sort imports', () => {
 		});
 
 		test('ignore local exports', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				export const foo = 1;
 				export const bar = 2;
 			`);
@@ -84,7 +84,7 @@ describe('rule: sort imports', () => {
 
 	describe('invalid code', () => {
 		test('unsorted modules', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import 'foo';
 				import 'bar';
 
@@ -94,7 +94,7 @@ describe('rule: sort imports', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(2);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import 'bar';
 				import 'foo';
 
@@ -104,7 +104,7 @@ describe('rule: sort imports', () => {
 		});
 
 		test('unsorted specifiers', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import { b, a } from 'foo';
 
 				export { b, a } from 'foo';
@@ -112,7 +112,7 @@ describe('rule: sort imports', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(2);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import { a, b } from 'foo';
 
 				export { a, b } from 'foo';
@@ -120,20 +120,20 @@ describe('rule: sort imports', () => {
 		});
 
 		test('mixed case specifiers', () => {
-			const report = reporter.lint(javascript`
+			const report = reporter.lint(code`
 				import { Ab, ba, Ba, ab } from 'foo';
 			`);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import { ab, Ab, ba, Ba } from 'foo';
 			`);
 		});
 
 		test('case groups', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import { Ab, ba, Ba, ab } from 'foo';
 				`,
 				[
@@ -145,14 +145,14 @@ describe('rule: sort imports', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import { ab, ba, Ab, Ba } from 'foo';
 			`);
 		});
 
 		test('case groups, upper first', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import { Ab, ba, Ba, ab } from 'foo';
 				`,
 				[
@@ -165,14 +165,14 @@ describe('rule: sort imports', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import { Ab, Ba, ab, ba } from 'foo';
 			`);
 		});
 
 		test('2 > 10', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import { a2, a10 } from 'foo';
 				`,
 				[
@@ -184,14 +184,14 @@ describe('rule: sort imports', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import { a10, a2 } from 'foo';
 			`);
 		});
 
 		test('unsorted local specifiers', () => {
 			const report = reporter.lint(
-				javascript`
+				code`
 					import { a as b, b as a } from 'foo';
 				`,
 				[
@@ -203,7 +203,7 @@ describe('rule: sort imports', () => {
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
-			expect(report.code).toEqual(javascript`
+			expect(report.code).toEqual(code`
 				import { b as a, a as b } from 'foo';
 			`);
 		});
