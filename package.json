@@ -1,6 +1,6 @@
 {
 	"name": "eslint-plugin-style",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"description": "ESLint plugin for different stylistic issues",
 	"keywords": [
 		"eslint",
