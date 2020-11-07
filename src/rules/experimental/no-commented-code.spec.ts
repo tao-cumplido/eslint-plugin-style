@@ -164,5 +164,22 @@ describe('rule: no-commented-code', () => {
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
 		});
+
+		test('ignore patterns', () => {
+			const report = reporter.lint(
+				javascript`
+					// foo.toString();
+					// bar.toString();
+				`,
+				[
+					{
+						ignorePatterns: ['^foo'],
+					},
+				],
+			);
+
+			expect(report.result).toEqual(LintResult.Invalid);
+			expect(report.errors).toHaveLength(1);
+		});
 	});
 });

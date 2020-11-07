@@ -31,7 +31,7 @@ function parseIgnorePatterns(config?: Partial<Configuration>) {
 		return;
 	}
 
-	const ignorePatterns = new Set(...config.ignorePatterns);
+	const ignorePatterns = new Set(config.ignorePatterns);
 
 	if (config.extendDefaultIgnorePatterns) {
 		defaultConfiguration.ignorePatterns.forEach((pattern) => ignorePatterns.add(pattern));
