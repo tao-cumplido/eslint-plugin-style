@@ -181,5 +181,18 @@ describe('rule: no-commented-code', () => {
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
 		});
+
+		test('typescript ranges parser option', () => {
+			const report = reporter.lint(
+				code`
+					// function foo(a) { return a; }
+				`,
+				[],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Invalid);
+			expect(report.errors).toHaveLength(1);
+		});
 	});
 });

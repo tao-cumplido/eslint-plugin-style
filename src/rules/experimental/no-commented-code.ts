@@ -42,6 +42,14 @@ function parseIgnorePatterns(config?: Partial<Configuration>) {
 
 export const rule: RuleModule<[Configuration]> = {
 	create(context) {
+		function isSyntaxError(error: unknown) {
+			if (error instanceof SyntaxError) {
+				return true;
+			}
+
+			return context.parserPath.includes('@typescript-eslint/parser') && !(error instanceof Error);
+		}
+
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const parser = require(context.parserPath) as unknown as Parser;
 		const source = context.getSourceCode();
@@ -92,8 +100,13 @@ export const rule: RuleModule<[Configuration]> = {
 					loc: comment.loc,
 					message: `comment contains code: ${comment.value}`,
 				});
-			} catch {
-				// comment is not code
+			} catch (error: unknown) {
+				if (isSyntaxError(error)) {
+					// comment is not code
+					return {};
+				}
+
+				throw error;
 			}
 		}
 
