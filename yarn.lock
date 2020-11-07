@@ -1475,10 +1475,10 @@ eslint-plugin-no-only-tests@^2.4.0:
   resolved "https://registry.yarnpkg.com/eslint-plugin-no-only-tests/-/eslint-plugin-no-only-tests-2.4.0.tgz#7d565434aa7d16ccc7eea957c391d98f827332ca"
   integrity sha512-azP9PwQYfGtXJjW273nIxQH9Ygr+5/UyeW2wEjYoDtVYPI+WPKwbj0+qcAKYUXFZLRumq4HKkFaoDBAwBoXImQ==
 
-eslint-plugin-style@^0.0.11:
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-style/-/eslint-plugin-style-0.0.11.tgz#a0e3299684b633f9eceb53e5bcaa80a8b53790fa"
-  integrity sha512-vH1bRnHRlNBsKJV9cigMuqzxLT/qLjDwxvjblEL9V7gAI68Ut2uiKknA6qCk4xFcu7TteH03E4UogsiWv9cdLg==
+eslint-plugin-style@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-style/-/eslint-plugin-style-0.0.12.tgz#f01175933d45aabde26e3fdce04af588de07d6e7"
+  integrity sha512-CwUn7ucdF6d0O/iTIsiCuoL44auXETGAWIKLgNqukYImSTCeVKrH/NVm7YxheCmgLRw6XLzuLZnrs+FFlII5jA==
   dependencies:
     builtin-modules "^3.1.0"
     tslib "^2.0.3"
