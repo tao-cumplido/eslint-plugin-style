@@ -47,7 +47,7 @@ export const rule: RuleModule<[Configuration]> = {
 				return true;
 			}
 
-			return context.parserPath.includes('@typescript-eslint/parser') && !(error instanceof Error);
+			return context.parserPath.includes('@typescript-eslint') && !(error instanceof Error);
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
