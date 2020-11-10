@@ -42,12 +42,12 @@ function parseIgnorePatterns(config?: Partial<Configuration>) {
 
 export const rule: RuleModule<[Configuration]> = {
 	create(context) {
-		function isSyntaxError(error: unknown) {
+		function isNonSyntaxError(error: unknown): error is { message: string } {
 			if (error instanceof SyntaxError) {
-				return true;
+				return false;
 			}
 
-			return context.parserPath.includes('@typescript-eslint') && !(error instanceof Error);
+			return context.parserPath.includes('@typescript-eslint') && (error instanceof Error);
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -113,12 +113,14 @@ export const rule: RuleModule<[Configuration]> = {
 					message: `comment contains code: ${comment.value}`,
 				});
 			} catch (error: unknown) {
-				if (isSyntaxError(error)) {
-					// comment is not code
-					return {};
+				// comment is not code
+				if (isNonSyntaxError(error)) {
+					const position = { line: 1, column: 0 };
+					context.report({
+						loc: { start: position, end: position },
+						message: error.message,
+					});
 				}
-
-				throw error;
 			}
 		}
 
