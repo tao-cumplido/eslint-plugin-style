@@ -1,6 +1,4 @@
-import path from 'path';
-
-import { code, AggregateError, LintReporter, LintResult } from '../../util/test';
+import { code, LintReporter, LintResult } from '../../util/test';
 import { rule } from './no-commented-code';
 
 describe('rule: no-commented-code', () => {
@@ -8,14 +6,6 @@ describe('rule: no-commented-code', () => {
 
 	const tsParser = {
 		parser: '@typescript-eslint/parser',
-	};
-
-	const tsParserProject = {
-		...tsParser,
-		parserOptions: {
-			project: path.resolve(__dirname, 'no-commented-code.tsconfig.json'),
-			tsconfigRootDir: __dirname,
-		},
 	};
 
 	describe('valid code', () => {
@@ -67,11 +57,6 @@ describe('rule: no-commented-code', () => {
 				// type Foo<T> = T;
 			`);
 
-			expect(report.result).toEqual(LintResult.Valid);
-		});
-
-		test('typescript project valid file', () => {
-			const report = reporter.lint('', [], tsParserProject, 'valid.ts');
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 	});
@@ -140,19 +125,6 @@ describe('rule: no-commented-code', () => {
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
-		});
-
-		test('typescript project invalid file', () => {
-			expect.assertions(2);
-
-			try {
-				reporter.lint('', [], tsParserProject, path.resolve(__dirname, 'invalid.ts'));
-			} catch (error: unknown) {
-				if (error instanceof AggregateError) {
-					expect(error.errors).toHaveLength(1);
-					expect(error.errors[0].message).toContain('parserOptions.project');
-				}
-			}
 		});
 
 		test('urls can be detected as labeled statement', () => {

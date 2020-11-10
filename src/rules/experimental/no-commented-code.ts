@@ -103,6 +103,10 @@ export const rule: RuleModule<[Configuration]> = {
 					eslintVisitorKeys: true,
 					eslintScopeManager: true,
 					filePath: context.getFilename(),
+					// don't parse a typescript source in a project context
+					// it'd be much slower and not necessary for simple syntax validation
+					project: undefined,
+					projects: undefined,
 				});
 				context.report({
 					loc: comment.loc,
