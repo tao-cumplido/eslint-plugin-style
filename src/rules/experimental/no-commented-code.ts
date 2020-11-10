@@ -93,8 +93,16 @@ export const rule: RuleModule<[Configuration]> = {
 				const parse = parser.parse ?? parser.parseForESLint;
 				parse?.(lines.join('\n'), {
 					...context.parserOptions,
-					filePath: context.getFilename(), // necessary for typescript projects that have 'project' set in 'parserOptions'
-					range: true, // workaround for some typescript code: https://github.com/typescript-eslint/typescript-eslint/issues/2742
+					// provide same parser defaults as eslint (https://github.com/eslint/eslint/blob/82669fa66670a00988db5b1d10fe8f3bf30be84e/lib/linter/linter.js#L636-L645)
+					// the typescript parser would potentially error without the 'filePath' or 'range' options (https://github.com/typescript-eslint/typescript-eslint/issues/2742)
+					loc: true,
+					range: true,
+					raw: true,
+					tokens: true,
+					comment: true,
+					eslintVisitorKeys: true,
+					eslintScopeManager: true,
+					filePath: context.getFilename(),
 				});
 				context.report({
 					loc: comment.loc,
