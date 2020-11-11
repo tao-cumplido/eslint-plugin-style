@@ -104,16 +104,15 @@ export const rule: RuleModule<[Configuration]> = {
 					eslintScopeManager: true,
 					filePath: context.getFilename(),
 					// don't parse a typescript source in a project context
-					// it'd be much slower and not necessary for simple syntax validation
+					// it'd be much slower and is not necessary for simple syntax validation
 					project: undefined,
 					projects: undefined,
 				});
 				context.report({
 					loc: comment.loc,
-					message: `comment contains code: ${comment.value}`,
+					message: 'comment contains code',
 				});
 			} catch (error: unknown) {
-				// comment is not code
 				if (isNonSyntaxError(error)) {
 					const position = { line: 1, column: 0 };
 					context.report({
