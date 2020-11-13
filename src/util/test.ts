@@ -19,7 +19,7 @@ export enum LintResult {
 export interface LintReport {
 	result: LintResult;
 	code: string;
-	errors: string[];
+	errors: Linter.LintMessage[];
 }
 
 export class AggregateError extends Error {
@@ -79,7 +79,7 @@ export class LintReporter<Configuration extends unknown[]> {
 		return {
 			result,
 			code: fixReport.output,
-			errors: errorReport.map(({ message }) => message),
+			errors: errorReport,
 		};
 	}
 }

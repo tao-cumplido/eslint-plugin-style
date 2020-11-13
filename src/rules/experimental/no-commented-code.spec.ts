@@ -166,5 +166,27 @@ describe('rule: no-commented-code', () => {
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
 		});
+
+		test('consecutive line comments', () => {
+			const report = reporter.lint(code`
+				// if (foo) {
+				//    bar();
+				// }
+			`);
+
+			expect(report.result).toEqual(LintResult.Invalid);
+			expect(report.errors).toHaveLength(3);
+		});
+
+		test('split comments matching block', () => {
+			const report = reporter.lint(code`
+				// if (foo) {
+					bar();
+				// }
+			`);
+
+			expect(report.result).toEqual(LintResult.Invalid);
+			expect(report.errors).toHaveLength(2);
+		});
 	});
 });
