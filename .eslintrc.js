@@ -231,7 +231,7 @@ module.exports = {
 		'prefer-exponentiation-operator': 2,
 		'prefer-object-spread': 2,
 		'quote-props': [2, 'consistent'],
-		'quotes': [2, 'single'],
+		'quotes': [2, 'single', { avoidEscape: true, allowTemplateLiterals: true }],
 		'semi': [2, 'always'],
 		'semi-spacing': 2,
 		'semi-style': [2, 'last'],
@@ -290,7 +290,7 @@ module.exports = {
 		// plugins
 		'style/group-imports': [2],
 		'style/sort-imports': [2, { caseGroups: true }],
-		'style/experimental/no-commented-code': [2, { ignorePatterns: ['^https?://'], extendDefaultIgnorePatterns: true }],
+		'style/experimental/no-commented-code': [1, { ignorePatterns: ['^https?://'], extendDefaultIgnorePatterns: true }],
 		'no-only-tests/no-only-tests': [2],
 	},
 	overrides: [
@@ -524,7 +524,7 @@ module.exports = {
 				'no-useless-constructor': 0,
 				'@typescript-eslint/no-useless-constructor': 2,
 				'quotes': 0,
-				'@typescript-eslint/quotes': [2, 'single'],
+				'@typescript-eslint/quotes': [2, 'single', { avoidEscape: true, allowTemplateLiterals: true }],
 				'require-await': 0,
 				'@typescript-eslint/require-await': 2,
 				'no-return-await': 0,
