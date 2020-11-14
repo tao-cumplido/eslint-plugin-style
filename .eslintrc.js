@@ -59,7 +59,7 @@ module.exports = {
 		'array-callback-return': 2,
 		'block-scoped-var': 0,
 		'class-methods-use-this': 0,
-		'complexity': [1, 10],
+		'complexity': [1, 20],
 		'consistent-return': 0,
 		'curly': [2, 'all'],
 		'default-case': 0,

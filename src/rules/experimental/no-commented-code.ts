@@ -44,7 +44,6 @@ function parseIgnorePatterns(config?: Partial<Configuration>) {
 }
 
 export const rule: RuleModule<[Configuration]> = {
-	// eslint-disable-next-line complexity
 	create(context) {
 		function isNonSyntaxError(error: unknown): error is { message: string } {
 			if (error instanceof SyntaxError) {
