@@ -44,6 +44,24 @@ function parseIgnorePatterns(config?: Partial<Configuration>) {
 }
 
 export const rule: RuleModule<[Configuration]> = {
+	meta: {
+		schema: [
+			{
+				type: 'object',
+				properties: {
+					ignorePatterns: {
+						type: 'array',
+						items: {
+							type: 'string',
+						},
+					},
+					extendDefaultIgnorePatterns: {
+						type: 'boolean',
+					},
+				},
+			},
+		],
+	},
 	create(context) {
 		function isNonSyntaxError(error: unknown): error is { message: string } {
 			if (error instanceof SyntaxError) {
