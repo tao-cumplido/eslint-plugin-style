@@ -106,16 +106,16 @@ The default configuration is:
 
 ## Experimental rules
 
-:warning: These rules are experimental and may produce unexpected behavior. These rules are not auto-fixable! :warning:
+:warning: These rules are experimental and may produce unexpected behavior. :warning:
+
+-  These rules are not auto-fixable!
+-  Consider setting the level to `"warn"` instead of `"error"`.
 
 ### `style/experimental/no-commented-code`
 
-This rule is meant to detect commented code. It does so by uncommenting a comment node and run the whole file with the uncommented part through the parser.
-If the parser produces a valid AST the comment is marked as commented code. Generally it should work with any parser, for example, `// type A = 0;` is not
-commented code with the default parser `espree` but it is with `@typescript-eslint/parser`.
+This rule is meant to detect commented code. It does so by uncommenting comment nodes and run the whole file with the uncommented part through the parser. If the parser produces a valid AST the comment is marked as commented code. Generally it should work with any parser but has only been tested with the default parser `espree` and `@typescript-eslint/parser`. For example, `// type A = 0;` is not commented code with `espree` but it is with `@typescript-eslint/parser`.
 
-False positives will probably happen, single words for example, are valid identifiers in most positions. And `// eslint-disable-next-line` is parsed as a
-`BinaryExpression`. Common patterns can be ignored and `^eslint-` is ignored by default.
+False positives will probably happen, single words for example, are valid identifiers in many positions and `eslint-disable-next-line` is parsed as a `BinaryExpression`. Common patterns can be ignored and `^eslint-` is ignored by default.
 
 The following configuration options can be set:
 
