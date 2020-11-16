@@ -1,7 +1,7 @@
 import { code, LintReporter, LintResult } from '../util/test';
 import { rule, GroupClass } from './group-imports';
 
-describe('rule: group', () => {
+describe('rule: group-imports', () => {
 	const reporter = new LintReporter(rule);
 
 	describe('valid code', () => {

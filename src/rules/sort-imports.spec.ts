@@ -1,7 +1,7 @@
 import { code, LintReporter, LintResult } from '../util/test';
 import { rule } from './sort-imports';
 
-describe('rule: sort imports', () => {
+describe('rule: sort-imports', () => {
 	const reporter = new LintReporter(rule);
 
 	describe('valid code', () => {
