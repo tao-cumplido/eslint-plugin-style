@@ -1,7 +1,7 @@
 import type { AST, Linter } from 'eslint';
 import type { Comment, SourceLocation } from 'estree';
 
-import type { RuleModule } from '../../util';
+import type { RuleModule } from '../../util/rule';
 
 type LocationComment = Comment & { loc: SourceLocation };
 

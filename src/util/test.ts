@@ -1,6 +1,6 @@
 import { Linter } from 'eslint';
 
-import type { PartialMap, RuleModule } from './types';
+import type { PartialMap, RuleModule } from './rule';
 
 export function code([source]: TemplateStringsArray): string {
 	return source

@@ -1,10 +1,12 @@
 import { isAbsolute } from 'path';
 
 import builtinModules from 'builtin-modules';
-import type { ImportDeclaration } from 'estree';
 
-import type { RuleContext, RuleModule } from '../util';
-import { extrema, fixRange, importDeclarations, linesBetween, sortBy } from '../util';
+import type { ImportModuleDeclaration } from '../util/ast';
+import { extrema, importModules, linesBetween } from '../util/ast';
+import type { RuleContext, RuleModule } from '../util/rule';
+import { fixRange } from '../util/rule';
+import { sortByPath } from '../util/sort';
 
 export enum GroupClass {
 	Node = '#NODE',
@@ -23,7 +25,7 @@ const defaultConfiguration: Configuration = {
 	groups: [GroupClass.Node, GroupClass.External, GroupClass.Absolute, GroupClass.Relative],
 };
 
-function groupIndex(node: ImportDeclaration, groups: GroupConfiguration) {
+function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration) {
 	if (typeof node.source.value !== 'string') {
 		return groups.length;
 	}
@@ -56,8 +58,8 @@ function groupIndex(node: ImportDeclaration, groups: GroupConfiguration) {
 
 function checkLines(
 	context: RuleContext<[Configuration]>,
-	previous: ImportDeclaration,
-	next: ImportDeclaration,
+	previous: ImportModuleDeclaration,
+	next: ImportModuleDeclaration,
 	lineCount: number,
 ) {
 	if (linesBetween(previous, next) === lineCount) {
@@ -112,7 +114,7 @@ export const rule: RuleModule<[Configuration]> = {
 
 		const source = context.getSourceCode();
 
-		const imports = importDeclarations(source).map((node) => {
+		const imports = importModules(source).map((node) => {
 			return {
 				index: groupIndex(node, groupConfiguration),
 				node,
@@ -123,11 +125,11 @@ export const rule: RuleModule<[Configuration]> = {
 			return {};
 		}
 
-		const sorted = sortBy(imports, ['index']);
+		const sorted = sortByPath(imports, ['index']);
 
 		let previousIndex = sorted[0].index;
 
-		const groups = sorted.reduce<ImportDeclaration[][]>(
+		const groups = sorted.reduce<ImportModuleDeclaration[][]>(
 			(r, v) => {
 				const current = r[r.length - 1];
 

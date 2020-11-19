@@ -1,9 +1,11 @@
 import type { ExportSpecifier, ImportDeclaration, ImportSpecifier, Node } from 'estree';
 
-import type { RuleModule, SortOptions } from '../util';
-import { extrema, fixRange, importDeclarations, linesBetween, sortBy } from '../util';
-import type { ExportFromDeclaration } from '../util/export-from-declarations';
-import { exportFromDeclarations } from '../util/export-from-declarations';
+import type { ExportModuleDeclaration, ModuleDeclaration } from '../util/ast';
+import { exportModules, extrema, importModules, linesBetween } from '../util/ast';
+import type { RuleModule } from '../util/rule';
+import { fixRange } from '../util/rule';
+import type { SortOptions } from '../util/sort';
+import { sortByPath } from '../util/sort';
 
 export interface Configuration extends SortOptions {
 	specifier: 'source' | 'rename';
@@ -71,8 +73,8 @@ export const rule: RuleModule<[Configuration]> = {
 			return result;
 		};
 
-		const sortImportModules = (group: ImportDeclaration[]) => {
-			const sorted = sortBy(group, ['source', 'value'], configuration);
+		const sortModules = (group: ModuleDeclaration[]) => {
+			const sorted = sortByPath(group, ['source', 'value'], configuration);
 
 			if (sorted.some((node, i) => node !== group[i])) {
 				fixRange(context, {
@@ -83,9 +85,20 @@ export const rule: RuleModule<[Configuration]> = {
 			}
 		};
 
-		const sortImportSpecifiers = (specifiers: ImportSpecifier[]) => {
-			const from: 'imported' | 'local' = configuration.specifier === 'source' ? 'imported' : 'local';
-			const sorted = sortBy(specifiers, [from, 'name'], configuration);
+		const sortSpecifiers = <T extends ImportSpecifier | ExportSpecifier>(specifiers: T[]) => {
+			if (!specifiers.length) {
+				return;
+			}
+
+			let sorted: Array<ImportSpecifier | ExportSpecifier>;
+
+			if (specifiers[0].type === 'ImportSpecifier') {
+				const from: 'imported' | 'local' = configuration.specifier === 'source' ? 'imported' : 'local';
+				sorted = sortByPath(specifiers as ImportSpecifier[], [from, 'name'], configuration);
+			} else {
+				const from: 'exported' | 'local' = configuration.specifier === 'source' ? 'local' : 'exported';
+				sorted = sortByPath(specifiers as ExportSpecifier[], [from, 'name'], configuration);
+			}
 
 			if (sorted.some((node, i) => node !== specifiers[i])) {
 				fixRange(context, {
@@ -96,31 +109,19 @@ export const rule: RuleModule<[Configuration]> = {
 			}
 		};
 
-		importDeclarations(source)
+		importModules(source)
 			.reduce<ImportDeclaration[][]>(partition, [[]])
 			.forEach((group) => {
-				sortImportModules(group);
+				sortModules(group);
 				group.forEach((node) => {
-					sortImportSpecifiers(node.specifiers.filter(($): $ is ImportSpecifier => $.type === 'ImportSpecifier'));
+					sortSpecifiers(node.specifiers.filter(($): $ is ImportSpecifier => $.type === 'ImportSpecifier'));
 				});
 			});
 
 		if (configuration.sortExports) {
-			const sortExportModules = (group: ExportFromDeclaration[]) => {
-				const sorted = sortBy(group, ['source', 'value'], configuration);
-
-				if (sorted.some((node, i) => node !== group[i])) {
-					fixRange(context, {
-						range: extrema(group),
-						message: 'Expected modules in group to be sorted',
-						code: sorted.map((node) => source.getText(node)).join('\n'),
-					});
-				}
-			};
-
 			const sortExportSpecifiers = (specifiers: ExportSpecifier[]) => {
 				const from: 'exported' | 'local' = configuration.specifier === 'source' ? 'local' : 'exported';
-				const sorted = sortBy(specifiers, [from, 'name'], configuration);
+				const sorted = sortByPath(specifiers, [from, 'name'], configuration);
 
 				if (sorted.some((node, i) => node !== specifiers[i])) {
 					fixRange(context, {
@@ -131,10 +132,10 @@ export const rule: RuleModule<[Configuration]> = {
 				}
 			};
 
-			exportFromDeclarations(source)
-				.reduce<ExportFromDeclaration[][]>(partition, [[]])
+			exportModules(source)
+				.reduce<ExportModuleDeclaration[][]>(partition, [[]])
 				.forEach((group) => {
-					sortExportModules(group);
+					sortModules(group);
 					group.forEach((node) => sortExportSpecifiers(node.specifiers ?? []));
 				});
 		}
