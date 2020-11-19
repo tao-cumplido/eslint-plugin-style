@@ -1,6 +1,6 @@
-import type { ExportSpecifier, ImportDeclaration, ImportSpecifier, Node } from 'estree';
+import type { ExportSpecifier, ImportSpecifier, Node } from 'estree';
 
-import type { ExportModuleDeclaration, ModuleDeclaration } from '../util/ast';
+import type { ExportModuleDeclaration, ImportModuleDeclaration, ModuleDeclaration } from '../util/ast';
 import { exportModules, extrema, importModules, linesBetween } from '../util/ast';
 import type { RuleModule } from '../util/rule';
 import { fixRange } from '../util/rule';
@@ -110,7 +110,7 @@ export const rule: RuleModule<[Configuration]> = {
 		};
 
 		importModules(source)
-			.reduce<ImportDeclaration[][]>(partition, [[]])
+			.reduce<ImportModuleDeclaration[][]>(partition, [[]])
 			.forEach((group) => {
 				sortModules(group);
 				group.forEach((node) => {
