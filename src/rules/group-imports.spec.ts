@@ -261,5 +261,16 @@ describe('rule: group-imports', () => {
 				import 'baz';
 			`);
 		});
+
+		test('other code between imports', () => {
+			const report = reporter.lint(code`
+				import 'foo';
+				console.log(0);
+				import 'bar';
+			`);
+
+			expect(report.result).toEqual(LintResult.Invalid);
+			expect(report.errors).toHaveLength(1);
+		});
 	});
 });

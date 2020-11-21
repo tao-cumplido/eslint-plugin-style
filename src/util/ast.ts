@@ -27,3 +27,7 @@ export function linesBetween(a: estree.Node, b: estree.Node): number {
 
 	return b.loc.start.line - a.loc.end.line - 1;
 }
+
+export function onlyWhiteSpaceBetween(a: estree.Node, b: estree.Node, source: SourceCode): boolean {
+	return !source.getFirstTokenBetween(a, b, { includeComments: true });
+}

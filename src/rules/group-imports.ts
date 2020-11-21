@@ -3,7 +3,7 @@ import { isAbsolute } from 'path';
 import builtinModules from 'builtin-modules';
 
 import type { ImportModuleDeclaration } from '../util/ast';
-import { extrema, importModules, linesBetween } from '../util/ast';
+import { extrema, importModules, linesBetween, onlyWhiteSpaceBetween } from '../util/ast';
 import type { RuleContext, RuleModule } from '../util/rule';
 import { fixRange } from '../util/rule';
 import { sortByPath } from '../util/sort';
@@ -70,7 +70,7 @@ function checkLines(
 		node: previous,
 		message: `Expected ${lineCount} empty line${lineCount === 1 ? '' : 's'} after import`,
 		fix(fixer) {
-			if (!previous.range || !next.range) {
+			if (!previous.range || !next.range || !onlyWhiteSpaceBetween(previous, next, context.getSourceCode())) {
 				return null;
 			}
 

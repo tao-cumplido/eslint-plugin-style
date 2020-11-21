@@ -29,7 +29,8 @@ In your `.eslintrc`:
 
 ### `style/group-imports`
 
-Requires imports to be grouped and groups to be separated by a new line. Auto-fixable!
+Requires imports to be grouped and groups to be separated by a new line. This rule is partially auto-fixable.
+It is currently not capable to move an import that is preceded by non-import statements including comments.
 
 The following configuration options can be set:
 
