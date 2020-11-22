@@ -8,21 +8,23 @@ import type { RuleContext, RuleModule } from '../util/rule';
 import { fixRange } from '../util/rule';
 import { sortByPath } from '../util/sort';
 
-export enum GroupClass {
-	Node = '#NODE',
-	External = '#EXTERNAL',
-	Absolute = '#ABSOLUTE',
-	Relative = '#RELATIVE',
+export enum ModuleClass {
+	Node = 'node',
+	External = 'external',
+	Absolute = 'absolute',
+	Relative = 'relative',
 }
 
-type GroupConfiguration = Array<string | string[]>;
+type ModuleConfiguration = string | { class: ModuleClass };
+
+type GroupConfiguration = Array<ModuleConfiguration | ModuleConfiguration[]>;
 
 export interface Configuration {
 	groups: GroupConfiguration;
 }
 
 const defaultConfiguration: Configuration = {
-	groups: [GroupClass.Node, GroupClass.External, GroupClass.Absolute, GroupClass.Relative],
+	groups: [{ class: ModuleClass.Node }, { class: ModuleClass.External }, { class: ModuleClass.Absolute }, { class: ModuleClass.Relative }],
 };
 
 function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration) {
@@ -35,23 +37,23 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration) {
 
 	const module = importPath.startsWith('/') ? `/${pathSegments[1]}` : pathSegments[0];
 
-	const findIndex = (callback: (group: string) => unknown) => groups.findIndex(($) => $ instanceof Array ? $.find(($$) => callback($$)) : callback($));
+	const findIndex = (callback: (group: ModuleConfiguration) => unknown) => groups.findIndex(($) => $ instanceof Array ? $.find(($$) => callback($$)) : callback($));
 
-	const hardCodedIndex = findIndex((group) => group === module);
+	const hardCodedIndex = findIndex((group) => typeof group === 'string' && group === module);
 
 	if (hardCodedIndex >= 0) {
 		return hardCodedIndex;
 	}
 
-	let moduleClass = GroupClass.External;
+	let moduleClass = ModuleClass.External;
 
 	if (builtinModules.includes(module)) {
-		moduleClass = GroupClass.Node;
+		moduleClass = ModuleClass.Node;
 	} else if (/^(\/|\.)/u.exec(module)) {
-		moduleClass = isAbsolute(module) ? GroupClass.Absolute : GroupClass.Relative;
+		moduleClass = isAbsolute(module) ? ModuleClass.Absolute : ModuleClass.Relative;
 	}
 
-	const classIndex = findIndex((group) => group === moduleClass);
+	const classIndex = findIndex((group) => typeof group === 'object' && group.class === moduleClass);
 
 	return classIndex >= 0 ? classIndex : groups.length;
 }
@@ -81,11 +83,11 @@ function checkLines(
 
 function groupLabels(groups: GroupConfiguration) {
 	return groups.map((group) => {
-		if (group instanceof Array || !Object.values<string>(GroupClass).includes(group)) {
+		if (group instanceof Array || typeof group === 'string') {
 			return 'custom';
 		}
 
-		return group;
+		return group.class.toUpperCase();
 	});
 }
 
@@ -94,15 +96,37 @@ export const rule: RuleModule<[Configuration]> = {
 		fixable: 'code',
 		schema: [
 			{
+				definitions: {
+					moduleConfiguration: {
+						oneOf: [
+							{ type: 'string' },
+							{
+								type: 'object',
+								properties: {
+									class: {
+										enum: ['node', 'external', 'absolute', 'relative'],
+									},
+								},
+							},
+						],
+					},
+				},
 				type: 'object',
 				properties: {
 					groups: {
 						type: 'array',
 						items: {
-							type: ['string', 'array'],
-							items: {
-								type: 'string',
-							},
+							anyOf: [
+								{
+									$ref: '#/definitions/moduleConfiguration',
+								},
+								{
+									type: 'array',
+									items: {
+										$ref: '#/definitions/moduleConfiguration',
+									},
+								},
+							],
 						},
 					},
 				},

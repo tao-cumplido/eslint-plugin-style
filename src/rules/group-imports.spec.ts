@@ -1,5 +1,5 @@
 import { code, LintReporter, LintResult } from '../util/test';
-import { rule, GroupClass } from './group-imports';
+import { rule, ModuleClass } from './group-imports';
 
 describe('rule: group-imports', () => {
 	const reporter = new LintReporter(rule);
@@ -36,7 +36,7 @@ describe('rule: group-imports', () => {
 				`,
 				[
 					{
-						groups: [GroupClass.External, GroupClass.Node],
+						groups: [{ class: ModuleClass.External }, { class: ModuleClass.Node }],
 					},
 				],
 			);
@@ -55,7 +55,7 @@ describe('rule: group-imports', () => {
 				`,
 				[
 					{
-						groups: ['fs', GroupClass.External, GroupClass.Node],
+						groups: ['fs', { class: ModuleClass.External }, { class: ModuleClass.Node }],
 					},
 				],
 			);
@@ -72,7 +72,7 @@ describe('rule: group-imports', () => {
 				`,
 				[
 					{
-						groups: [[GroupClass.Node, GroupClass.External]],
+						groups: [[{ class: ModuleClass.Node }, { class: ModuleClass.External }]],
 					},
 				],
 			);
@@ -241,7 +241,7 @@ describe('rule: group-imports', () => {
 				`,
 				[
 					{
-						groups: [[GroupClass.Node, GroupClass.Absolute], 'foo'],
+						groups: [[{ class: ModuleClass.Node }, { class: ModuleClass.Absolute }], 'foo'],
 					},
 				],
 			);

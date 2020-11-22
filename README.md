@@ -35,23 +35,25 @@ It is currently not capable to move an import that is preceded by non-import sta
 The following configuration options can be set:
 
 ```ts
+type ModuleConfiguration = string | { class: 'node' | 'external' | 'relative' | 'absolute' };
+
 interface Configuration {
-	groups?: Array<string | string[]>;
+	groups?: Array<ModuleConfiguration | ModuleConfiguration[]>;
 }
 ```
 
-where `string` can be a package name, a scope name or one of the following tokens:
+where `ModuleConfiguration` can be a package name, a scope name or an object with the property `class` taking one of the following:
 
--  `#NODE`: All node builtin packages like `fs` and `path`.
--  `#EXTERNAL`: All other declared dependencies, e.g. `lodash`, `react`, etc.
--  `#RELATIVE`: All relative imports.
--  `#ABSOLUTE`: All absolute imports, never seen a project use these, but it's possible.
+-  `node`: All node builtin packages like `fs` and `path`.
+-  `external`: All other declared dependencies, e.g. `lodash`, `react`, etc.
+-  `relative`: All relative imports.
+-  `absolute`: All absolute imports, never seen a project use these, but it's possible.
 
 The default configuration is:
 
 ```json
 {
-	"groups": ["#NODE", "#EXTERNAL", "#ABSOLUTE", "#RELATIVE"]
+	"groups": [{ "class": "node" }, { "class": "external" }, { "class": "absolute" }, { "class": "relative" }]
 }
 ```
 
@@ -59,7 +61,7 @@ Nested arrays allow packages to be treated as a single group, e.g.
 
 ```json
 {
-	"groups": [["#NODE", "#EXTERNAL"], ["@my-scope", "my-package"], "#RELATIVE"]
+	"groups": [[{ "class": "node" }, { "class": "external" }], ["@my-scope", "my-package"], { "class": "relative" }]
 }
 ```
 
