@@ -1,3 +1,4 @@
+import Ajv from 'ajv';
 import { Linter } from 'eslint';
 
 import type { PartialMap, RuleModule } from './rule';
@@ -30,13 +31,24 @@ export class AggregateError extends Error {
 }
 
 export class LintReporter<Configuration extends unknown[]> {
+	private static readonly ajv = new Ajv({
+		verbose: true,
+		allErrors: true,
+	});
+
 	private readonly linter = new Linter();
 
-	constructor(rule: RuleModule<Configuration>) {
+	constructor(private readonly rule: RuleModule<Configuration>) {
 		this.linter.defineRule('test', rule);
 	}
 
 	lint(source: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>, linterConfig?: Linter.Config, filename?: string): LintReport {
+		const schemas = this.rule.meta?.schema instanceof Array ? this.rule.meta.schema : this.rule.meta?.schema ? [this.rule.meta.schema] : [];
+
+		if (!options.every((option, index) => LintReporter.ajv.validate(schemas[index], option))) {
+			throw new Error(LintReporter.ajv.errorsText());
+		}
+
 		const config: Linter.Config = {
 			...linterConfig,
 			parserOptions: {
