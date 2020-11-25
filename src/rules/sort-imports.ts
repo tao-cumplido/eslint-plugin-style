@@ -20,7 +20,7 @@ const defaultConfiguration: Configuration = {
 	sortExports: true,
 };
 
-export const rule: RuleModule<[Configuration]> = {
+export const rule: RuleModule<[Partial<Configuration>?]> = {
 	meta: {
 		fixable: 'code',
 		schema: [

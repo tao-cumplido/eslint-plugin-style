@@ -10,52 +10,68 @@ describe('rule: no-commented-code', () => {
 
 	describe('valid code', () => {
 		test('no comments', () => {
-			const report = reporter.lint('');
+			const report = reporter.lint(code``, []);
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 
 		test('docstyle comment can contain code', () => {
-			const report = reporter.lint(code`
-				/**
-				 * const foo = 1;
-				 */
-			`);
+			const report = reporter.lint(
+				code`
+					/**
+					 * const foo = 1;
+					 */
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 
 		test('line comments (JS)', () => {
-			const report = reporter.lint(code`
-				// hello world
-				console.log(0); // !
-			`);
+			const report = reporter.lint(
+				code`
+					// hello world
+					console.log(0); // !
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 
 		test('line comments (TS)', () => {
-			const report = reporter.lint(code`
-				// hello world
-				console.log(0); // !
-			`, [], tsParser);
+			const report = reporter.lint(
+				code`
+					// hello world
+					console.log(0); // !
+				`,
+				[],
+				tsParser,
+			);
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 
 		test('directive comments', () => {
-			const report = reporter.lint(code`
-				// @ts-expect-error
-				// eslint-disable-next-line
-				// const foo = 1;
-			`);
+			const report = reporter.lint(
+				code`
+					// @ts-expect-error
+					// eslint-disable-next-line
+					// const foo = 1;
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 
 		test('commented typescript in js is valid', () => {
-			const report = reporter.lint(code`
-				// type Foo<T> = T;
-			`);
+			const report = reporter.lint(
+				code`
+					// type Foo<T> = T;
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
@@ -63,52 +79,67 @@ describe('rule: no-commented-code', () => {
 
 	describe('invalid code', () => {
 		test('single line comment', () => {
-			const report = reporter.lint(code`
-				// console.log(0);
-			`);
+			const report = reporter.lint(
+				code`
+					// console.log(0);
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
 		});
 
 		test('single block comment on one line', () => {
-			const report = reporter.lint(code`
-				/* console.log(0); */
-			`);
+			const report = reporter.lint(
+				code`
+					/* console.log(0); */
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
 		});
 
 		test('single block comment over multiple lines', () => {
-			const report = reporter.lint(code`
-				/*
-				const foo = 0;
-				console.log(foo);
-				*/
-			`);
+			const report = reporter.lint(
+				code`
+					/*
+					const foo = 0;
+					console.log(foo);
+					*/
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
 		});
 
 		test('multiple block comments on one line', () => {
-			const report = reporter.lint(code`
-				console.log(0, /* 1, */ 2, /* 3 */);
-			`);
+			const report = reporter.lint(
+				code`
+					console.log(0, /* 1, */ 2, /* 3 */);
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(2);
 		});
 
 		test('commented entry in multiline list', () => {
-			const report = reporter.lint(code`
-				const foo = [
-					0,
-					// 1,
-					2,
-				];
-			`);
+			const report = reporter.lint(
+				code`
+					const foo = [
+						0,
+						// 1,
+						2,
+					];
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
@@ -128,10 +159,13 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('urls can be detected as labeled statement', () => {
-			const report = reporter.lint(code`
-				// https://www.example.com/
-				{}
-			`);
+			const report = reporter.lint(
+				code`
+					// https://www.example.com/
+					{}
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
@@ -143,11 +177,7 @@ describe('rule: no-commented-code', () => {
 					// foo.toString();
 					// bar.toString();
 				`,
-				[
-					{
-						ignorePatterns: ['^foo'],
-					},
-				],
+				[{ ignorePatterns: ['^foo'] }],
 			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
@@ -168,22 +198,28 @@ describe('rule: no-commented-code', () => {
 		});
 
 		test('consecutive line comments', () => {
-			const report = reporter.lint(code`
-				// if (foo) {
-				//    bar();
-				// }
-			`);
+			const report = reporter.lint(
+				code`
+					// if (foo) {
+					//    bar();
+					// }
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(3);
 		});
 
 		test('split comments matching block', () => {
-			const report = reporter.lint(code`
-				// if (foo) {
-					bar();
-				// }
-			`);
+			const report = reporter.lint(
+				code`
+					// if (foo) {
+						bar();
+					// }
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(2);

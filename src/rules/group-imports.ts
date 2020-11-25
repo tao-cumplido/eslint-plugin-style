@@ -17,17 +17,11 @@ export enum ModuleClass {
 
 type ModuleConfiguration = string | { class: ModuleClass };
 
-type GroupConfiguration = Array<ModuleConfiguration | ModuleConfiguration[]>;
+export type GroupConfiguration = ModuleConfiguration | ModuleConfiguration[];
 
-export interface Configuration {
-	groups: GroupConfiguration;
-}
+const defaultConfiguration: GroupConfiguration[] = [{ class: ModuleClass.Node }, { class: ModuleClass.External }, { class: ModuleClass.Absolute }, { class: ModuleClass.Relative }];
 
-const defaultConfiguration: Configuration = {
-	groups: [{ class: ModuleClass.Node }, { class: ModuleClass.External }, { class: ModuleClass.Absolute }, { class: ModuleClass.Relative }],
-};
-
-function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration) {
+function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[]) {
 	if (typeof node.source.value !== 'string') {
 		return groups.length;
 	}
@@ -59,7 +53,7 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration) {
 }
 
 function checkLines(
-	context: RuleContext<[Configuration]>,
+	context: RuleContext<GroupConfiguration[]>,
 	previous: ImportModuleDeclaration,
 	next: ImportModuleDeclaration,
 	lineCount: number,
@@ -81,7 +75,7 @@ function checkLines(
 	});
 }
 
-function groupLabels(groups: GroupConfiguration) {
+function groupLabels(groups: GroupConfiguration[]) {
 	return groups.map((group) => {
 		if (group instanceof Array || typeof group === 'string') {
 			return 'custom';
@@ -91,56 +85,49 @@ function groupLabels(groups: GroupConfiguration) {
 	});
 }
 
-export const rule: RuleModule<[Configuration]> = {
+export const rule: RuleModule<GroupConfiguration[]> = {
 	meta: {
 		fixable: 'code',
-		schema: [
-			{
-				definitions: {
-					moduleConfiguration: {
-						oneOf: [
-							{ type: 'string' },
-							{
-								type: 'object',
-								properties: {
-									class: {
-										enum: ['node', 'external', 'absolute', 'relative'],
-									},
+		schema: {
+			definitions: {
+				moduleConfiguration: {
+					oneOf: [
+						{ type: 'string' },
+						{
+							type: 'object',
+							properties: {
+								class: {
+									enum: ['node', 'external', 'absolute', 'relative'],
 								},
 							},
-						],
-					},
-				},
-				type: 'object',
-				properties: {
-					groups: {
-						type: 'array',
-						items: {
-							anyOf: [
-								{
-									$ref: '#/definitions/moduleConfiguration',
-								},
-								{
-									type: 'array',
-									items: {
-										$ref: '#/definitions/moduleConfiguration',
-									},
-								},
-							],
 						},
-					},
+					],
 				},
 			},
-		],
+			type: 'array',
+			items: {
+				anyOf: [
+					{
+						$ref: '#/definitions/moduleConfiguration',
+					},
+					{
+						type: 'array',
+						items: {
+							$ref: '#/definitions/moduleConfiguration',
+						},
+					},
+				],
+			},
+		},
 	},
 	create(context) {
-		const groupConfiguration = context.options[0]?.groups ?? defaultConfiguration.groups;
+		const groupConfigurations = context.options.length ? context.options : defaultConfiguration;
 
 		const source = context.getSourceCode();
 
 		const imports = importModules(source).map((node) => {
 			return {
-				index: groupIndex(node, groupConfiguration),
+				index: groupIndex(node, groupConfigurations),
 				node,
 			};
 		});
@@ -173,7 +160,7 @@ export const rule: RuleModule<[Configuration]> = {
 		if (sorted.some((node, i) => node !== imports[i])) {
 			fixRange(context, {
 				range: extrema(imports.map(({ node }) => node)),
-				message: `Expected import groups: ${groupLabels(groupConfiguration).join(', ')}`,
+				message: `Expected import groups: ${groupLabels(groupConfigurations).join(', ')}`,
 				code: groups.map((nodes) => nodes.map((node) => source.getText(node)).join('\n')).join('\n\n'),
 			});
 		} else {

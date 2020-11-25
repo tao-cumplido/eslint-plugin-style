@@ -6,23 +6,26 @@ describe('rule: group-imports', () => {
 
 	describe('valid code', () => {
 		test('no imports', () => {
-			const report = reporter.lint('');
+			const report = reporter.lint(code``, []);
 			expect(report.result).toEqual(LintResult.Valid);
 		});
 
 		test('default groups', () => {
-			const report = reporter.lint(code`
-				import 'fs';
-				import 'path';
+			const report = reporter.lint(
+				code`
+					import 'fs';
+					import 'path';
 
-				import 'foo';
-				import 'bar';
+					import 'foo';
+					import 'bar';
 
-				import '/';
+					import '/';
 
-				import '../foo';
-				import './bar';
-			`);
+					import '../foo';
+					import './bar';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
@@ -34,11 +37,7 @@ describe('rule: group-imports', () => {
 
 					import 'fs';
 				`,
-				[
-					{
-						groups: [{ class: ModuleClass.External }, { class: ModuleClass.Node }],
-					},
-				],
+				[{ class: ModuleClass.External }, { class: ModuleClass.Node }],
 			);
 
 			expect(report.result).toEqual(LintResult.Valid);
@@ -53,11 +52,7 @@ describe('rule: group-imports', () => {
 
 					import 'path';
 				`,
-				[
-					{
-						groups: ['fs', { class: ModuleClass.External }, { class: ModuleClass.Node }],
-					},
-				],
+				['fs', { class: ModuleClass.External }, { class: ModuleClass.Node }],
 			);
 
 			expect(report.result).toEqual(LintResult.Valid);
@@ -70,11 +65,7 @@ describe('rule: group-imports', () => {
 					import 'foo';
 					import 'path';
 				`,
-				[
-					{
-						groups: [[{ class: ModuleClass.Node }, { class: ModuleClass.External }]],
-					},
-				],
+				[[{ class: ModuleClass.Node }, { class: ModuleClass.External }]],
 			);
 
 			expect(report.result).toEqual(LintResult.Valid);
@@ -83,10 +74,13 @@ describe('rule: group-imports', () => {
 
 	describe('invalid code', () => {
 		test('missing new line between groups', () => {
-			const report = reporter.lint(code`
-				import 'fs';
-				import 'foo';
-			`);
+			const report = reporter.lint(
+				code`
+					import 'fs';
+					import 'foo';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
@@ -98,12 +92,15 @@ describe('rule: group-imports', () => {
 		});
 
 		test('too many lines between groups', () => {
-			const report = reporter.lint(code`
-				import 'fs';
+			const report = reporter.lint(
+				code`
+					import 'fs';
 
 
-				import 'foo';
-			`);
+					import 'foo';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
@@ -115,11 +112,14 @@ describe('rule: group-imports', () => {
 		});
 
 		test('invalid new line in group', () => {
-			const report = reporter.lint(code`
-				import 'fs';
+			const report = reporter.lint(
+				code`
+					import 'fs';
 
-				import 'path';
-			`);
+					import 'path';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
@@ -130,11 +130,14 @@ describe('rule: group-imports', () => {
 		});
 
 		test('wrong group order', () => {
-			const report = reporter.lint(code`
-				import 'foo';
+			const report = reporter.lint(
+				code`
+					import 'foo';
 
-				import 'fs';
-			`);
+					import 'fs';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
@@ -146,11 +149,14 @@ describe('rule: group-imports', () => {
 		});
 
 		test('ungrouped', () => {
-			const report = reporter.lint(code`
-				import './bar';
-				import 'foo';
-				import 'fs';
-			`);
+			const report = reporter.lint(
+				code`
+					import './bar';
+					import 'foo';
+					import 'fs';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
@@ -164,14 +170,17 @@ describe('rule: group-imports', () => {
 		});
 
 		test('delimited group', () => {
-			const report = reporter.lint(code`
-				import 'foo';
+			const report = reporter.lint(
+				code`
+					import 'foo';
 
-				import 'fs';
-				import 'path';
+					import 'fs';
+					import 'path';
 
-				import 'bar';
-			`);
+					import 'bar';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(1);
@@ -185,15 +194,18 @@ describe('rule: group-imports', () => {
 		});
 
 		test('separated groups', () => {
-			const report = reporter.lint(code`
-				import 'fs';
+			const report = reporter.lint(
+				code`
+					import 'fs';
 
-				import 'path';
+					import 'path';
 
-				import 'foo';
+					import 'foo';
 
-				import 'bar';
-			`);
+					import 'bar';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(2);
@@ -207,14 +219,17 @@ describe('rule: group-imports', () => {
 		});
 
 		test('invalid new lines and missing new lines', () => {
-			const report = reporter.lint(code`
-				import 'fs';
+			const report = reporter.lint(
+				code`
+					import 'fs';
 
-				import 'path';
-				import 'foo';
+					import 'path';
+					import 'foo';
 
-				import 'bar';
-			`);
+					import 'bar';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
 			expect(report.errors).toHaveLength(3);
@@ -239,11 +254,7 @@ describe('rule: group-imports', () => {
 					import 'baz';
 					import 'foo/d';
 				`,
-				[
-					{
-						groups: [[{ class: ModuleClass.Node }, { class: ModuleClass.Absolute }], 'foo'],
-					},
-				],
+				[[{ class: ModuleClass.Node }, { class: ModuleClass.Absolute }], 'foo'],
 			);
 
 			expect(report.result).toEqual(LintResult.Fixed);
@@ -263,11 +274,14 @@ describe('rule: group-imports', () => {
 		});
 
 		test('other code between imports', () => {
-			const report = reporter.lint(code`
-				import 'foo';
-				console.log(0);
-				import 'bar';
-			`);
+			const report = reporter.lint(
+				code`
+					import 'foo';
+					console.log(0);
+					import 'bar';
+				`,
+				[],
+			);
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);

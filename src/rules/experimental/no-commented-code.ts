@@ -43,7 +43,7 @@ function parseIgnorePatterns(config?: Partial<Configuration>) {
 	return [...ignorePatterns].reduce(mapPatternReducer, []);
 }
 
-export const rule: RuleModule<[Configuration]> = {
+export const rule: RuleModule<[Partial<Configuration>?]> = {
 	meta: {
 		schema: [
 			{

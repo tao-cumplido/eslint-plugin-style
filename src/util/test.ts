@@ -1,7 +1,7 @@
 import Ajv from 'ajv';
 import { Linter } from 'eslint';
 
-import type { PartialMap, RuleModule } from './rule';
+import type { RuleModule } from './rule';
 
 export function code([source]: TemplateStringsArray): string {
 	return source
@@ -31,7 +31,7 @@ export class AggregateError extends Error {
 }
 
 export class LintReporter<Configuration extends unknown[]> {
-	private static readonly ajv = new Ajv({
+	private readonly ajv = new Ajv({
 		verbose: true,
 		allErrors: true,
 	});
@@ -42,11 +42,19 @@ export class LintReporter<Configuration extends unknown[]> {
 		this.linter.defineRule('test', rule);
 	}
 
-	lint(source: string, options: PartialMap<Configuration> = [] as PartialMap<Configuration>, linterConfig?: Linter.Config, filename?: string): LintReport {
-		const schemas = this.rule.meta?.schema instanceof Array ? this.rule.meta.schema : this.rule.meta?.schema ? [this.rule.meta.schema] : [];
+	lint(source: string, options: Configuration, linterConfig?: Linter.Config, filename?: string): LintReport {
+		// in both cases validation will be synchronous but Ajv's typings don't provide this difference
+		if (this.rule.meta?.schema instanceof Array) {
+			const schemas = this.rule.meta.schema;
+			// eslint-disable-next-line @typescript-eslint/no-misused-promises
+			options.forEach((option, index) => this.ajv.validate(schemas[index], option));
+		} else if (this.rule.meta?.schema) {
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises
+			this.ajv.validate(this.rule.meta.schema, options);
+		}
 
-		if (!options.every((option, index) => LintReporter.ajv.validate(schemas[index], option))) {
-			throw new Error(LintReporter.ajv.errorsText());
+		if (this.ajv.errors?.length) {
+			throw new Error(this.ajv.errorsText());
 		}
 
 		const config: Linter.Config = {

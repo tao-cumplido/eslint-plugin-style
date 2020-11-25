@@ -30,16 +30,14 @@ In your `.eslintrc`:
 ### `style/group-imports`
 
 Requires imports to be grouped and groups to be separated by a new line. This rule is partially auto-fixable.
-It is currently not capable to move an import that is preceded by non-import statements including comments.
+It is currently not capable to move an import that is preceded by non-import statements, including comments.
 
 The following configuration options can be set:
 
 ```ts
 type ModuleConfiguration = string | { class: 'node' | 'external' | 'relative' | 'absolute' };
 
-interface Configuration {
-	groups?: Array<ModuleConfiguration | ModuleConfiguration[]>;
-}
+type Configuration = Array<ModuleConfiguration | ModuleConfiguration[]>;
 ```
 
 where `ModuleConfiguration` can be a package name, a scope name or an object with the property `class` taking one of the following:
@@ -52,20 +50,16 @@ where `ModuleConfiguration` can be a package name, a scope name or an object wit
 The default configuration is:
 
 ```json
-{
-	"groups": [{ "class": "node" }, { "class": "external" }, { "class": "absolute" }, { "class": "relative" }]
-}
+[{ "class": "node" }, { "class": "external" }, { "class": "absolute" }, { "class": "relative" }]
 ```
 
 Nested arrays allow packages to be treated as a single group, e.g.
 
 ```json
-{
-	"groups": [[{ "class": "node" }, { "class": "external" }], ["@my-scope", "my-package"], { "class": "relative" }]
-}
+[[{ "class": "node" }, { "class": "external" }], ["@my-scope", "my-package"], { "class": "relative" }]
 ```
 
-Explicitly declared packages and scopes have precedence over the predefined tokens. Unused tokens are in an implicit additional group.
+Explicitly declared packages and scopes have precedence over the predefined `class` tokens. Unused tokens are in an implicit additional group.
 
 ### `style/sort-imports`
 
