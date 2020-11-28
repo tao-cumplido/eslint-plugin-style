@@ -35,31 +35,56 @@ It is currently not capable to move an import that is preceded by non-import sta
 The following configuration options can be set:
 
 ```ts
-type ModuleConfiguration = string | { class: 'node' | 'external' | 'relative' | 'absolute' };
+interface ModuleClassConfiguration {
+	class: 'node' | 'external' | 'relative' | 'absolute';
+	types?: 'include' | 'exclude' | 'only';
+}
+
+interface ModulePackageConfiguration {
+	package: string;
+	types?: 'include' | 'exclude' | 'only';
+}
+
+type ModuleConfiguration = string | ModulePackageConfiguration | ModuleClassConfiguration;
 
 type Configuration = Array<ModuleConfiguration | ModuleConfiguration[]>;
 ```
 
-where `ModuleConfiguration` can be a package name, a scope name or an object with the property `class` taking one of the following:
+where `ModuleConfiguration` can be a package name, a scope name or an object.  
+If it's an object, `package` can be a package name or a scope name and `class` can be one of the following:
 
 -  `node`: All node builtin packages like `fs` and `path`.
 -  `external`: All other declared dependencies, e.g. `lodash`, `react`, etc.
 -  `relative`: All relative imports.
 -  `absolute`: All absolute imports, never seen a project use these, but it's possible.
 
-The default configuration is:
-
-```json
-[{ "class": "node" }, { "class": "external" }, { "class": "absolute" }, { "class": "relative" }]
-```
+The property `types` is only relevant for TypeScript's type imports and defaults to `'include'`.
+If you want type and value imports to be in separate groups you need to explicitly declare them with `'only'` and `'exclude'`.
 
 Nested arrays allow packages to be treated as a single group, e.g.
 
+<!-- prettier-ignore -->
 ```json
-[[{ "class": "node" }, { "class": "external" }], ["@my-scope", "my-package"], { "class": "relative" }]
+[
+	[{ "class": "node" }, { "class": "external" }],
+	["@my-scope", "my-package"],
+	{ "class": "relative" }
+]
 ```
 
 Explicitly declared packages and scopes have precedence over the predefined `class` tokens. Unused tokens are in an implicit additional group.
+
+The default configuration is:
+
+<!-- prettier-ignore -->
+```json
+[
+	{ "class": "node" },
+	{ "class": "external" },
+	{ "class": "absolute" },
+	{ "class": "relative" }
+]
+```
 
 ### `style/sort-imports`
 

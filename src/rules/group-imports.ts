@@ -15,7 +15,23 @@ export enum ModuleClass {
 	Relative = 'relative',
 }
 
-type ModuleConfiguration = string | { class: ModuleClass };
+export enum TypeImportConfiguration {
+	Include = 'include',
+	Exclude = 'exclude', // eslint-disable-line @typescript-eslint/no-shadow
+	Only = 'only',
+}
+
+interface ModuleClassConfiguration {
+	class: ModuleClass;
+	types?: TypeImportConfiguration;
+}
+
+interface ModulePackageConfiguration {
+	package: string;
+	types?: TypeImportConfiguration;
+}
+
+type ModuleConfiguration = string | ModulePackageConfiguration | ModuleClassConfiguration;
 
 export type GroupConfiguration = ModuleConfiguration | ModuleConfiguration[];
 
@@ -31,9 +47,25 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[])
 
 	const module = importPath.startsWith('/') ? `/${pathSegments[1]}` : pathSegments[0];
 
-	const findIndex = (callback: (group: ModuleConfiguration) => unknown) => groups.findIndex(($) => $ instanceof Array ? $.find(($$) => callback($$)) : callback($));
+	const findIndex = (callback: (group: ModuleConfiguration) => boolean) => groups.findIndex(($) => $ instanceof Array ? $.find(($$) => callback($$)) : callback($));
 
-	const hardCodedIndex = findIndex((group) => typeof group === 'string' && group === module);
+	const isTypeImport = node.importKind === 'type';
+
+	const hardCodedIndex = findIndex((group) => {
+		if (typeof group === 'string') {
+			return group === module;
+		}
+
+		if (!Reflect.has(group, 'package')) {
+			return false;
+		}
+
+		if (isTypeImport) {
+			return group.package === module && group.types !== TypeImportConfiguration.Exclude;
+		}
+
+		return group.package === module && group.types !== TypeImportConfiguration.Only;
+	});
 
 	if (hardCodedIndex >= 0) {
 		return hardCodedIndex;
@@ -47,7 +79,17 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[])
 		moduleClass = isAbsolute(module) ? ModuleClass.Absolute : ModuleClass.Relative;
 	}
 
-	const classIndex = findIndex((group) => typeof group === 'object' && group.class === moduleClass);
+	const classIndex = findIndex((group) => {
+		if (typeof group !== 'object' || !Reflect.has(group, 'class')) {
+			return false;
+		}
+
+		if (isTypeImport) {
+			return group.class === moduleClass && group.types !== TypeImportConfiguration.Exclude;
+		}
+
+		return group.class === moduleClass && group.types !== TypeImportConfiguration.Only;
+	});
 
 	return classIndex >= 0 ? classIndex : groups.length;
 }
@@ -77,7 +119,7 @@ function checkLines(
 
 function groupLabels(groups: GroupConfiguration[]) {
 	return groups.map((group) => {
-		if (group instanceof Array || typeof group === 'string') {
+		if (group instanceof Array || typeof group === 'string' || Reflect.has(group, 'package')) {
 			return 'custom';
 		}
 
@@ -90,6 +132,9 @@ export const rule: RuleModule<GroupConfiguration[]> = {
 		fixable: 'code',
 		schema: {
 			definitions: {
+				typeImportConfiguration: {
+					enum: ['include', 'exclude', 'only'],
+				},
 				moduleConfiguration: {
 					oneOf: [
 						{ type: 'string' },
@@ -99,7 +144,25 @@ export const rule: RuleModule<GroupConfiguration[]> = {
 								class: {
 									enum: ['node', 'external', 'absolute', 'relative'],
 								},
+								types: {
+									$ref: '#/definitions/typeImportConfiguration',
+								},
 							},
+							required: ['class'],
+							additionalProperties: false,
+						},
+						{
+							type: 'object',
+							properties: {
+								package: {
+									type: 'string',
+								},
+								types: {
+									$ref: '#/definitions/typeImportConfiguration',
+								},
+							},
+							required: ['package'],
+							additionalProperties: false,
 						},
 					],
 				},

@@ -1,8 +1,12 @@
 import { code, LintReporter, LintResult } from '../util/test';
-import { rule, ModuleClass } from './group-imports';
+import { rule, ModuleClass, TypeImportConfiguration } from './group-imports';
 
 describe('rule: group-imports', () => {
 	const reporter = new LintReporter(rule);
+
+	const tsParser = {
+		parser: '@typescript-eslint/parser',
+	};
 
 	describe('valid code', () => {
 		test('no imports', () => {
@@ -66,6 +70,57 @@ describe('rule: group-imports', () => {
 					import 'path';
 				`,
 				[[{ class: ModuleClass.Node }, { class: ModuleClass.External }]],
+			);
+
+			expect(report.result).toEqual(LintResult.Valid);
+		});
+
+		test('type imports', () => {
+			const report = reporter.lint(
+				code`
+					import type fs from 'fs';
+					import 'fs';
+
+					import type foo from 'foo';
+					import 'foo';
+				`,
+				[],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Valid);
+		});
+
+		test('separate type imports', () => {
+			const report = reporter.lint(
+				code`
+					import type fs from 'fs';
+
+					import 'fs';
+
+					import type foo from 'foo';
+
+					import 'foo';
+				`,
+				[
+					{
+						class: ModuleClass.Node,
+						types: TypeImportConfiguration.Only,
+					},
+					{
+						class: ModuleClass.Node,
+						types: TypeImportConfiguration.Exclude,
+					},
+					{
+						package: 'foo',
+						types: TypeImportConfiguration.Only,
+					},
+					{
+						package: 'foo',
+						types: TypeImportConfiguration.Exclude,
+					},
+				],
+				tsParser,
 			);
 
 			expect(report.result).toEqual(LintResult.Valid);
@@ -285,6 +340,75 @@ describe('rule: group-imports', () => {
 
 			expect(report.result).toEqual(LintResult.Invalid);
 			expect(report.errors).toHaveLength(1);
+		});
+
+		test('type imports', () => {
+			const report = reporter.lint(
+				code`
+					import type fs from 'fs';
+
+					import 'fs';
+
+					import type foo from 'foo';
+
+					import 'foo';
+				`,
+				[],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(2);
+			expect(report.code).toEqual(code`
+				import type fs from 'fs';
+				import 'fs';
+
+				import type foo from 'foo';
+				import 'foo';
+			`);
+		});
+
+		test('separate type imports', () => {
+			const report = reporter.lint(
+				code`
+					import type fs from 'fs';
+					import 'fs';
+
+					import type foo from 'foo';
+					import 'foo';
+				`,
+				[
+					{
+						class: ModuleClass.Node,
+						types: TypeImportConfiguration.Only,
+					},
+					{
+						class: ModuleClass.Node,
+						types: TypeImportConfiguration.Exclude,
+					},
+					{
+						package: 'foo',
+						types: TypeImportConfiguration.Only,
+					},
+					{
+						package: 'foo',
+						types: TypeImportConfiguration.Exclude,
+					},
+				],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(2);
+			expect(report.code).toEqual(code`
+				import type fs from 'fs';
+
+				import 'fs';
+
+				import type foo from 'foo';
+
+				import 'foo';
+			`);
 		});
 	});
 });
