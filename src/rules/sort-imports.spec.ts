@@ -1,8 +1,12 @@
 import { code, LintReporter, LintResult } from '../util/test';
-import { rule } from './sort-imports';
+import { rule, TypeImportPosition } from './sort-imports';
 
 describe('rule: sort-imports', () => {
 	const reporter = new LintReporter(rule);
+
+	const tsParser = {
+		parser: '@typescript-eslint/parser',
+	};
 
 	describe('valid code', () => {
 		test('no imports/exports', () => {
@@ -90,6 +94,22 @@ describe('rule: sort-imports', () => {
 					export const bar = 2;
 				`,
 				[],
+			);
+
+			expect(report.result).toEqual(LintResult.Valid);
+		});
+
+		test('ignore type imports', () => {
+			const report = reporter.lint(
+				code`
+					import type foo from 'foo';
+					import 'foo';
+
+					import 'bar';
+					import type bar from 'bar';
+				`,
+				[],
+				tsParser,
 			);
 
 			expect(report.result).toEqual(LintResult.Valid);
@@ -211,6 +231,116 @@ describe('rule: sort-imports', () => {
 			expect(report.errors).toHaveLength(1);
 			expect(report.code).toEqual(code`
 				import { b as a, a as b } from 'foo';
+			`);
+		});
+
+		test('ignore types', () => {
+			const report = reporter.lint(
+				code`
+					import type bar from 'bar';
+					import 'foo';
+					import 'bar';
+					import type foo from 'foo';
+				`,
+				[],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`
+				import type bar from 'bar';
+				import 'bar';
+				import 'foo';
+				import type foo from 'foo';
+			`);
+		});
+
+		test('types on top', () => {
+			const report = reporter.lint(
+				code`
+					import 'foo';
+					import type foo from 'foo';
+					import 'bar';
+					import type bar from 'bar';
+				`,
+				[{ typesInGroup: TypeImportPosition.Top }],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`
+				import type bar from 'bar';
+				import type foo from 'foo';
+				import 'bar';
+				import 'foo';
+			`);
+		});
+
+		test('types on bottom', () => {
+			const report = reporter.lint(
+				code`
+					import type foo from 'foo';
+					import 'foo';
+					import type bar from 'bar';
+					import 'bar';
+				`,
+				[{ typesInGroup: TypeImportPosition.Bottom }],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`
+				import 'bar';
+				import 'foo';
+				import type bar from 'bar';
+				import type foo from 'foo';
+			`);
+		});
+
+		test('types above value', () => {
+			const report = reporter.lint(
+				code`
+					import 'foo';
+					import 'bar';
+					import type foo from 'foo';
+					import type bar from 'bar';
+				`,
+				[{ typesInGroup: TypeImportPosition.AboveValue }],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`
+				import type bar from 'bar';
+				import 'bar';
+				import type foo from 'foo';
+				import 'foo';
+			`);
+		});
+
+		test('types below value', () => {
+			const report = reporter.lint(
+				code`
+					import type foo from 'foo';
+					import type bar from 'bar';
+					import 'foo';
+					import 'bar';
+				`,
+				[{ typesInGroup: TypeImportPosition.BelowValue }],
+				tsParser,
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`
+				import 'bar';
+				import type bar from 'bar';
+				import 'foo';
+				import type foo from 'foo';
 			`);
 		});
 	});

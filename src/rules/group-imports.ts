@@ -3,7 +3,7 @@ import { isAbsolute } from 'path';
 import builtinModules from 'builtin-modules';
 
 import type { ImportModuleDeclaration } from '../util/ast';
-import { extrema, importModules, linesBetween, onlyWhiteSpaceBetween } from '../util/ast';
+import { extrema, importModules, isTypeImportOrExport, linesBetween, onlyWhiteSpaceBetween } from '../util/ast';
 import type { RuleContext, RuleModule } from '../util/rule';
 import { fixRange } from '../util/rule';
 import { sortByPath } from '../util/sort';
@@ -49,7 +49,7 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[])
 
 	const findIndex = (callback: (group: ModuleConfiguration) => boolean) => groups.findIndex(($) => $ instanceof Array ? $.find(($$) => callback($$)) : callback($));
 
-	const isTypeImport = node.importKind === 'type';
+	const isTypeImport = isTypeImportOrExport(node);
 
 	const hardCodedIndex = findIndex((group) => {
 		if (typeof group === 'string') {

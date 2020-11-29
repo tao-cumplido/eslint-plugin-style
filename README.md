@@ -1,6 +1,6 @@
 # eslint-plugin-style
 
-> ESLint plugin for for stylistic issues in modern JavaScrip
+> ESLint plugin for for stylistic issues in modern JavaScript
 
 [![NPM Version][npm-image]][npm-url]
 
@@ -102,12 +102,14 @@ interface Configuration {
 	caseFirst?: 'upper' | 'lower' | 'false';
 	caseGroups?: boolean;
 	sortExports?: boolean;
+	typesInGroup?: 'ignore' | 'top' | 'bottom' | 'above-value' | 'below-value';
 }
 ```
 
 -  `specifier`: Determines specifier priority, e.g. in `import { foo as bar } from 'baz'` `foo` is `'source'` and `bar` is `'rename'`.
 -  `caseGroups`: When `true`, import names need to be grouped by case before sorting.
 -  `sortExports`: Whether to sort deferred export groups, i.e. all statements that export from another module.
+-  `typesInGroup`: Where to place type imports/exports in groups with mixed type and value imports/exports. TypeScript only!
 
 For all other possible settings, see [String#localeCompare](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare).
 
@@ -122,7 +124,8 @@ The default configuration is:
 	"numeric": true,
 	"caseFirst": "lower",
 	"caseGroups": false,
-	"sortExports": true
+	"sortExports": true,
+	"typesInGroup": "ignore"
 }
 ```
 

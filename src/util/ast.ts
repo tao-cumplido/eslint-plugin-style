@@ -16,6 +16,10 @@ export function exportModules(source: SourceCode): ExportModuleDeclaration[] {
 	return source.ast.body.filter((node): node is ExportModuleDeclaration => (node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') && Boolean(node.source));
 }
 
+export function isTypeImportOrExport(node: ModuleDeclaration): boolean {
+	return (Reflect.has(node, 'importKind') && node.importKind === 'type') || (Reflect.has(node, 'exportKind') && node.exportKind === 'type');
+}
+
 export function extrema<T extends estree.Node>(source: T[]): [T, T] {
 	return [source[0], source[source.length - 1]];
 }

@@ -1,15 +1,24 @@
 import type { ExportSpecifier, ImportSpecifier, Node } from 'estree';
 
 import type { ExportModuleDeclaration, ImportModuleDeclaration, ModuleDeclaration } from '../util/ast';
-import { exportModules, extrema, importModules, linesBetween } from '../util/ast';
+import { exportModules, extrema, importModules, isTypeImportOrExport, linesBetween } from '../util/ast';
 import type { RuleModule } from '../util/rule';
 import { fixRange } from '../util/rule';
 import type { SortOptions } from '../util/sort';
 import { sortByPath } from '../util/sort';
 
+export enum TypeImportPosition {
+	Ignore = 'ignore',
+	Top = 'top',
+	Bottom = 'bottom',
+	AboveValue = 'above-value',
+	BelowValue = 'below-value',
+}
+
 export interface Configuration extends SortOptions {
 	specifier: 'source' | 'rename';
 	sortExports: boolean;
+	typesInGroup: TypeImportPosition;
 }
 
 const defaultConfiguration: Configuration = {
@@ -18,6 +27,7 @@ const defaultConfiguration: Configuration = {
 	numeric: true,
 	caseFirst: 'lower',
 	sortExports: true,
+	typesInGroup: TypeImportPosition.Ignore,
 };
 
 export const rule: RuleModule<[Partial<Configuration>?]> = {
@@ -54,6 +64,9 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 					sortExports: {
 						type: 'boolean',
 					},
+					typesInGroup: {
+						enum: ['ignore', 'top', 'bottom', 'above-value', 'below-value'],
+					},
 				},
 			},
 		],
@@ -75,6 +88,37 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 
 		const sortModules = (group: ModuleDeclaration[]) => {
 			const sorted = sortByPath(group, ['source', 'value'], configuration);
+
+			if (configuration.typesInGroup !== TypeImportPosition.Ignore) {
+				sorted.sort((a, b) => {
+					const aIsType = isTypeImportOrExport(a);
+					const bIsType = isTypeImportOrExport(b);
+
+					if (aIsType === bIsType) {
+						return 0;
+					}
+
+					// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+					switch (configuration.typesInGroup) {
+						case TypeImportPosition.Top:
+							return aIsType ? -1 : 1;
+						case TypeImportPosition.Bottom:
+							return aIsType ? 1 : -1;
+					}
+
+					if (a.source.value === b.source.value) {
+						// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+						switch (configuration.typesInGroup) {
+							case TypeImportPosition.AboveValue:
+								return aIsType ? -1 : 1;
+							case TypeImportPosition.BelowValue:
+								return aIsType ? 1 : -1;
+						}
+					}
+
+					return 0;
+				});
+			}
 
 			if (sorted.some((node, i) => node !== group[i])) {
 				fixRange(context, {
