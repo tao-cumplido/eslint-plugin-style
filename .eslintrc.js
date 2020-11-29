@@ -313,14 +313,14 @@ module.exports = {
 				'@typescript-eslint/adjacent-overload-signatures': 'error',
 				'@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
 				'@typescript-eslint/ban-ts-comment': [
-					2,
+					'error',
 					{
 						'ts-ignore': 'allow-with-description',
 						'ts-nocheck': 'allow-with-description',
 					},
 				],
 				'@typescript-eslint/ban-types': [
-					2,
+					'error',
 					{
 						types: { 'BigInt': { fixWith: 'bigint' } },
 						extendDefaults: true,
@@ -329,7 +329,7 @@ module.exports = {
 				'@typescript-eslint/class-literal-property-style': ['error', 'fields'],
 				'@typescript-eslint/consistent-indexed-object-style': ['error', 'record'],
 				'@typescript-eslint/consistent-type-assertions': [
-					2,
+					'error',
 					{
 						assertionStyle: 'as',
 						objectLiteralTypeAssertions: 'allow-as-parameter',
@@ -342,7 +342,7 @@ module.exports = {
 				'@typescript-eslint/explicit-module-boundary-types': ['error'],
 				'@typescript-eslint/member-delimiter-style': ['error'],
 				'@typescript-eslint/member-ordering': [
-					2,
+					'error',
 					{
 						default: [
 							'private-static-field',
@@ -379,7 +379,7 @@ module.exports = {
 				],
 				'@typescript-eslint/method-signature-style': ['error', 'property'],
 				'@typescript-eslint/naming-convention': [
-					2,
+					'error',
 					{
 						selector: 'default',
 						format: ['strictCamelCase'],
@@ -435,7 +435,7 @@ module.exports = {
 				'@typescript-eslint/no-misused-promises': ['error'],
 				'@typescript-eslint/no-throw-literal': 'error',
 				'@typescript-eslint/no-unnecessary-boolean-literal-compare': [
-					2,
+					'error',
 					{
 						allowComparingNullableBooleansToTrue: false,
 						allowComparingNullableBooleansToFalse: false,
@@ -463,7 +463,7 @@ module.exports = {
 				'@typescript-eslint/restrict-plus-operands': ['error', { checkCompoundAssignments: true }],
 				'@typescript-eslint/restrict-template-expressions': ['error'],
 				'@typescript-eslint/strict-boolean-expressions': [
-					2,
+					'error',
 					{
 						allowNullableString: true,
 						allowNullableNumber: true,
@@ -485,7 +485,7 @@ module.exports = {
 				'@typescript-eslint/func-call-spacing': ['error', 'never'],
 				'indent': 0,
 				'@typescript-eslint/indent': [
-					2,
+					'error',
 					'tab',
 					{
 						SwitchCase: 1,
@@ -506,7 +506,7 @@ module.exports = {
 				'@typescript-eslint/keyword-spacing': ['error', { before: true, after: true }],
 				'lines-between-class-members': 0,
 				'@typescript-eslint/lines-between-class-members': [
-					2,
+					'error',
 					'always',
 					{
 						exceptAfterSingleLine: true,
@@ -523,7 +523,7 @@ module.exports = {
 				'@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions', 'decoratedFunctions'] }],
 				'no-extra-parens': 0,
 				'@typescript-eslint/no-extra-parens': [
-					2,
+					'error',
 					'all',
 					{
 						returnAssign: false,
@@ -542,7 +542,7 @@ module.exports = {
 				'@typescript-eslint/no-redeclare': 'error',
 				'no-shadow': 0,
 				'@typescript-eslint/no-shadow': [
-					2,
+					'error',
 					{
 						builtinGlobals: true,
 						ignoreTypeValueShadow: false,
@@ -565,7 +565,7 @@ module.exports = {
 				'@typescript-eslint/semi': ['error', 'always'],
 				'space-before-function-paren': 0,
 				'@typescript-eslint/space-before-function-paren': [
-					2,
+					'error',
 					{
 						anonymous: 'always',
 						named: 'never',
