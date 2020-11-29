@@ -1,10 +1,10 @@
 import type { ExportSpecifier, ImportSpecifier, Node } from 'estree';
 
 import type { ExportModuleDeclaration, ImportModuleDeclaration, ModuleDeclaration } from '../util/ast';
-import { exportModules, extrema, importModules, isTypeImportOrExport, linesBetween } from '../util/ast';
 import type { RuleModule } from '../util/rule';
-import { fixRange } from '../util/rule';
 import type { SortOptions } from '../util/sort';
+import { exportModules, extrema, importModules, isTypeImportOrExport, linesBetween } from '../util/ast';
+import { fixRange } from '../util/rule';
 import { sortByPath } from '../util/sort';
 
 export enum TypeImportPosition {

@@ -3,8 +3,8 @@ import { isAbsolute } from 'path';
 import builtinModules from 'builtin-modules';
 
 import type { ImportModuleDeclaration } from '../util/ast';
-import { extrema, importModules, isTypeImportOrExport, linesBetween, onlyWhiteSpaceBetween } from '../util/ast';
 import type { RuleContext, RuleModule } from '../util/rule';
+import { extrema, importModules, isTypeImportOrExport, linesBetween, onlyWhiteSpaceBetween } from '../util/ast';
 import { fixRange } from '../util/rule';
 import { sortByPath } from '../util/sort';
 

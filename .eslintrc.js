@@ -289,7 +289,7 @@ module.exports = {
 		'yield-star-spacing': ['error', { before: false, after: true }],
 		// plugins
 		'style/group-imports': ['error'],
-		'style/sort-imports': ['error', { caseGroups: true }],
+		'style/sort-imports': ['error', { caseGroups: true, typesInGroup: 'top' }],
 		'style/experimental/no-commented-code': ['warn', { ignorePatterns: ['^https?://'], extendDefaultIgnorePatterns: true }],
 		'no-only-tests/no-only-tests': ['error'],
 	},
