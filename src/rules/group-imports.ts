@@ -35,7 +35,12 @@ type ModuleConfiguration = string | ModulePackageConfiguration | ModuleClassConf
 
 export type GroupConfiguration = ModuleConfiguration | ModuleConfiguration[];
 
-const defaultConfiguration: GroupConfiguration[] = [{ class: ModuleClass.Node }, { class: ModuleClass.External }, { class: ModuleClass.Absolute }, { class: ModuleClass.Relative }];
+const defaultConfiguration: GroupConfiguration[] = [
+	{ class: ModuleClass.Node },
+	{ class: ModuleClass.External },
+	{ class: ModuleClass.Absolute },
+	{ class: ModuleClass.Relative },
+];
 
 function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[]) {
 	if (typeof node.source.value !== 'string') {
@@ -47,7 +52,14 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[])
 
 	const module = importPath.startsWith('/') ? `/${pathSegments[1]}` : pathSegments[0];
 
-	const findIndex = (callback: (group: ModuleConfiguration) => boolean) => groups.findIndex(($) => $ instanceof Array ? $.find(($$) => callback($$)) : callback($));
+	const findIndex = (callback: (group: ModuleConfiguration) => boolean) =>
+		groups.findIndex((group) => {
+			if (group instanceof Array) {
+				return group.find((configuration) => callback(configuration));
+			}
+
+			return callback(group);
+		});
 
 	const isTypeImport = isTypeImportOrExport(node);
 
@@ -94,12 +106,7 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[])
 	return classIndex >= 0 ? classIndex : groups.length;
 }
 
-function checkLines(
-	context: RuleContext<GroupConfiguration[]>,
-	previous: ImportModuleDeclaration,
-	next: ImportModuleDeclaration,
-	lineCount: number,
-) {
+function checkLines(context: RuleContext<GroupConfiguration[]>, previous: ImportModuleDeclaration, next: ImportModuleDeclaration, lineCount: number) {
 	if (linesBetween(previous, next) === lineCount) {
 		return;
 	}

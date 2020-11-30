@@ -68,17 +68,18 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 				return false;
 			}
 
-			return context.parserPath.includes('@typescript-eslint') && (error instanceof Error);
+			return context.parserPath.includes('@typescript-eslint') && error instanceof Error;
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const parser = require(context.parserPath) as unknown as Parser;
+		const parser = (require(context.parserPath) as unknown) as Parser;
 		const source = context.getSourceCode();
 
 		const ignorePatterns = parseIgnorePatterns(context.options[0]) ?? defaultConfiguration.ignorePatterns.reduce(mapPatternReducer, []);
 
 		// generate power set of all comments to process and sort sets by size descending
-		const commentSets = source.getAllComments()
+		const commentSets = source
+			.getAllComments()
 			.filter((comment): comment is LocationComment => ignorePatterns.every((pattern) => !pattern.test(comment.value.trim())) && Boolean(comment.loc))
 			.reduce<LocationComment[][]>((sets, comment) => [...sets, ...sets.map((set) => [...set, comment])], [[]])
 			.sort((a, b) => b.length - a.length);

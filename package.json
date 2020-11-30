@@ -24,7 +24,8 @@
 		"prepublishOnly": "yarn build",
 		"build": "rimraf dist && tsc -p tsconfig.build.json",
 		"test": "jest",
-		"lint": "eslint \"**/*.{js,ts}\""
+		"lint": "eslint \"**/*.{js,ts}\"",
+		"format": "prettier --write \"**/*.{js,ts,json,md}\""
 	},
 	"dependencies": {
 		"builtin-modules": "^3.1.0",

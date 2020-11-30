@@ -46,24 +46,13 @@ function sort<T>(options?: SortOptions) {
 	};
 }
 
+// prettier-ignore
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function sortByPath<T extends object, K1 extends keyof T, K2 extends keyof T[K1], K3 extends keyof T[K1][K2]>(
-	source: T[],
-	path: readonly [K1, K2, K3],
-	options?: SortOptions,
-): T[];
+export function sortByPath<T extends object, K1 extends keyof T, K2 extends keyof T[K1], K3 extends keyof T[K1][K2]>(source: T[], path: readonly [K1, K2, K3], options?: SortOptions): T[];
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function sortByPath<T extends object, K1 extends keyof T, K2 extends keyof T[K1]>(
-	source: T[],
-	path: readonly [K1, K2],
-	options?: SortOptions,
-): T[];
+export function sortByPath<T extends object, K1 extends keyof T, K2 extends keyof T[K1]>(source: T[], path: readonly [K1, K2], options?: SortOptions): T[];
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function sortByPath<T extends object, K extends keyof T>(
-	source: T[],
-	path: readonly [K],
-	options?: SortOptions,
-): T[];
+export function sortByPath<T extends object, K extends keyof T>(source: T[], path: readonly [K], options?: SortOptions): T[];
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function sortByPath<T extends object>(sources: T[], path: ReadonlyArray<string | number>, options?: SortOptions): T[] {
 	const caseGroups = sources.reduce<CaseGroups<T>>(
@@ -100,5 +89,9 @@ export function sortByPath<T extends object>(sources: T[], path: ReadonlyArray<s
 	caseGroups.upper.sort(sort(options));
 	caseGroups.lower.sort(sort(options));
 
-	return [...caseGroups.punctuation.map(({ source }) => source), ...(options?.caseFirst === 'upper' ? caseGroups.upper : caseGroups.lower).map(({ source }) => source), ...(options?.caseFirst === 'upper' ? caseGroups.lower : caseGroups.upper).map(({ source }) => source)];
+	return [
+		...caseGroups.punctuation.map(({ source }) => source),
+		...(options?.caseFirst === 'upper' ? caseGroups.upper : caseGroups.lower).map(({ source }) => source),
+		...(options?.caseFirst === 'upper' ? caseGroups.lower : caseGroups.upper).map(({ source }) => source),
+	];
 }

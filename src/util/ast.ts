@@ -4,6 +4,7 @@ import type estree from 'estree';
 
 export type ImportModuleDeclaration = estree.ImportDeclaration & Partial<Pick<TSESTree.ImportDeclaration, 'importKind'>>;
 
+// prettier-ignore
 export type ExportModuleDeclaration = estree.ExportAllDeclaration & Partial<Pick<estree.ExportNamedDeclaration, 'specifiers'> & Pick<TSESTree.ExportAllDeclaration, 'exportKind'>>;
 
 export type ModuleDeclaration = ImportModuleDeclaration | ExportModuleDeclaration;
@@ -13,7 +14,9 @@ export function importModules(source: SourceCode): ImportModuleDeclaration[] {
 }
 
 export function exportModules(source: SourceCode): ExportModuleDeclaration[] {
-	return source.ast.body.filter((node): node is ExportModuleDeclaration => (node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') && Boolean(node.source));
+	return source.ast.body.filter(
+		(node): node is ExportModuleDeclaration => (node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') && Boolean(node.source),
+	);
 }
 
 export function isTypeImportOrExport(node: ModuleDeclaration): boolean {
