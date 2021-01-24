@@ -80,7 +80,18 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 		// generate power set of all comments to process and sort sets by size descending
 		const commentSets = source
 			.getAllComments()
-			.filter((comment): comment is LocationComment => ignorePatterns.every((pattern) => !pattern.test(comment.value.trim())) && Boolean(comment.loc))
+			.filter((comment): comment is LocationComment => {
+				if (!comment.loc) {
+					return false;
+				}
+
+				if (comment.type === 'Block' && comment.value.startsWith('*')) {
+					// ignore doc comments
+					return false;
+				}
+
+				return ignorePatterns.every((pattern) => !pattern.test(comment.value.trim()));
+			})
 			.reduce<LocationComment[][]>((sets, comment) => [...sets, ...sets.map((set) => [...set, comment])], [[]])
 			.sort((a, b) => b.length - a.length);
 

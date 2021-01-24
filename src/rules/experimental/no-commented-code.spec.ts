@@ -75,6 +75,17 @@ describe('rule: no-commented-code', () => {
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
+
+		test('should ignore doc comment', () => {
+			const report = reporter.lint(
+				code`
+					const n = 1 /** 1*/;
+				`,
+				[],
+			);
+
+			expect(report.result).toEqual(LintResult.Valid);
+		});
 	});
 
 	describe('invalid code', () => {
