@@ -114,6 +114,17 @@ describe('rule: sort-imports', () => {
 
 			expect(report.result).toEqual(LintResult.Valid);
 		});
+
+		test('empty path should not throw', () => {
+			const report = reporter.lint(
+				code`
+					export * from '';
+				`,
+				[{ caseGroups: true }],
+			);
+
+			expect(report.result).toEqual(LintResult.Valid);
+		});
 	});
 
 	describe('invalid code', () => {

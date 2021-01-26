@@ -66,7 +66,7 @@ export function sortByPath<T extends object>(sources: T[], path: ReadonlyArray<s
 
 			let target = groups.lower;
 
-			if (options?.caseGroups && typeof sortValue === 'string') {
+			if (options?.caseGroups && typeof sortValue === 'string' && sortValue.length) {
 				if (/^[@$_]/u.test(sortValue)) {
 					target = groups.punctuation;
 				} else if (sortValue[0].toLocaleUpperCase(options.locales) === sortValue[0]) {
