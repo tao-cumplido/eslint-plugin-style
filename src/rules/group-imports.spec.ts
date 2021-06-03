@@ -410,5 +410,23 @@ describe('rule: group-imports', () => {
 				import 'foo';
 			`);
 		});
+
+		test('node protocol imports', () => {
+			const report = reporter.lint(
+				code`
+					import 'node:fs';
+					import 'foo';
+				`,
+				[],
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`
+				import 'node:fs';
+
+				import 'foo';
+			`);
+		});
 	});
 });

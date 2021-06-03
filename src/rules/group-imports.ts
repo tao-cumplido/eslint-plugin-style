@@ -85,7 +85,7 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[])
 
 	let moduleClass = ModuleClass.External;
 
-	if (builtinModules.includes(module)) {
+	if (builtinModules.includes(module.replace(/^node:/u, ''))) {
 		moduleClass = ModuleClass.Node;
 	} else if (/^(\/|\.)/u.exec(module)) {
 		moduleClass = isAbsolute(module) ? ModuleClass.Absolute : ModuleClass.Relative;
