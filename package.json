@@ -21,7 +21,7 @@
 	],
 	"main": "dist/index.js",
 	"volta": {
-		"node": "14.15.4",
+		"node": "16.2.0",
 		"yarn": "1.22.10"
 	},
 	"scripts": {
