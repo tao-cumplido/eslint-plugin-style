@@ -1,6 +1,6 @@
 {
 	"name": "eslint-plugin-style",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "ESLint plugin for different stylistic issues",
 	"keywords": [
 		"eslint",
@@ -56,8 +56,8 @@
 		"typescript": "~4.4.4"
 	},
 	"peerDependencies": {
-		"eslint": "^8.0.0",
-		"@typescript-eslint/parser": "^5.0.0"
+		"@typescript-eslint/parser": "^5.0.0",
+		"eslint": "^8.0.0"
 	},
 	"peerDependenciesMeta": {
 		"@typescript-eslint/parser": {
