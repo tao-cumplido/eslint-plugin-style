@@ -25,8 +25,13 @@ export interface LintReport {
 
 export class AggregateError extends Error {
 	readonly name = 'AggregateError';
-	constructor(readonly errors: readonly Error[], readonly message: string) {
+	readonly errors: readonly Error[];
+	readonly message: string;
+
+	constructor(errors: readonly Error[], message: string) {
 		super(message);
+		this.errors = errors;
+		this.message = message;
 	}
 }
 
@@ -37,9 +42,11 @@ export class LintReporter<Configuration extends unknown[]> {
 	});
 
 	private readonly linter = new Linter();
+	private readonly rule: RuleModule<Configuration>;
 
-	constructor(private readonly rule: RuleModule<Configuration>) {
+	constructor(rule: RuleModule<Configuration>) {
 		this.linter.defineRule('test', rule);
+		this.rule = rule;
 	}
 
 	lint(source: string, options: Configuration, linterConfig?: Linter.Config, filename?: string): LintReport {
@@ -70,7 +77,7 @@ export class LintReporter<Configuration extends unknown[]> {
 		};
 
 		if (config.parser) {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-argument
 			this.linter.defineParser(config.parser, require(config.parser));
 		}
 

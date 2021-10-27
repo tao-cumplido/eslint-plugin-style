@@ -21,6 +21,7 @@ const defaultConfiguration: Configuration = {
 	extendDefaultIgnorePatterns: false,
 };
 
+// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
 function mapPatternReducer(result: RegExp[], pattern: string) {
 	try {
 		result.push(new RegExp(pattern, 'u'));
@@ -68,10 +69,13 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 				return false;
 			}
 
-			return context.parserPath.includes('@typescript-eslint') && error instanceof Error;
+			return (
+				// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-var-requires
+				context.parserPath.includes('@typescript-eslint') && !(error instanceof require('@typescript-eslint/typescript-estree/dist/node-utils').TSError)
+			);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 		const parser = (require(context.parserPath) as unknown) as Parser;
 		const source = context.getSourceCode();
 

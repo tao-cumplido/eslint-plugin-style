@@ -134,15 +134,15 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 				return;
 			}
 
-			let sorted: Array<ImportSpecifier | ExportSpecifier>;
+			const sorted: Array<ExportSpecifier | ImportSpecifier> = (() => {
+				if (specifiers[0].type === 'ImportSpecifier') {
+					const from: 'imported' | 'local' = configuration.specifier === 'source' ? 'imported' : 'local';
+					return sortByPath(specifiers as ImportSpecifier[], [from, 'name'], configuration);
+				}
 
-			if (specifiers[0].type === 'ImportSpecifier') {
-				const from: 'imported' | 'local' = configuration.specifier === 'source' ? 'imported' : 'local';
-				sorted = sortByPath(specifiers as ImportSpecifier[], [from, 'name'], configuration);
-			} else {
 				const from: 'exported' | 'local' = configuration.specifier === 'source' ? 'local' : 'exported';
-				sorted = sortByPath(specifiers as ExportSpecifier[], [from, 'name'], configuration);
-			}
+				return sortByPath(specifiers as ExportSpecifier[], [from, 'name'], configuration);
+			})();
 
 			if (sorted.some((node, i) => node !== specifiers[i])) {
 				fixRange(context, {
