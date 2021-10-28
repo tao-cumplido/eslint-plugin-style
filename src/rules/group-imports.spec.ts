@@ -112,11 +112,11 @@ describe('rule: group-imports', () => {
 						types: TypeImportConfiguration.Exclude,
 					},
 					{
-						package: 'foo',
+						path: 'foo',
 						types: TypeImportConfiguration.Only,
 					},
 					{
-						package: 'foo',
+						path: 'foo',
 						types: TypeImportConfiguration.Exclude,
 					},
 				],
@@ -387,11 +387,11 @@ describe('rule: group-imports', () => {
 						types: TypeImportConfiguration.Exclude,
 					},
 					{
-						package: 'foo',
+						path: 'foo',
 						types: TypeImportConfiguration.Only,
 					},
 					{
-						package: 'foo',
+						path: 'foo',
 						types: TypeImportConfiguration.Exclude,
 					},
 				],
@@ -426,6 +426,26 @@ describe('rule: group-imports', () => {
 				import 'node:fs';
 
 				import 'foo';
+			`);
+		});
+
+		test('separate module subpaths', () => {
+			const report = reporter.lint(
+				code`
+					import 'a/a/a';
+					import 'a/b/c';
+					import 'a/a/b';
+				`,
+				['a/a', 'a/b'],
+			);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`
+				import 'a/a/a';
+				import 'a/a/b';
+
+				import 'a/b/c';
 			`);
 		});
 	});

@@ -26,12 +26,12 @@ interface ModuleClassConfiguration {
 	types?: TypeImportConfiguration;
 }
 
-interface ModulePackageConfiguration {
-	package: string;
+interface ModulePathConfiguration {
+	path: string;
 	types?: TypeImportConfiguration;
 }
 
-type ModuleConfiguration = string | ModulePackageConfiguration | ModuleClassConfiguration;
+type ModuleConfiguration = string | ModulePathConfiguration | ModuleClassConfiguration;
 
 export type GroupConfiguration = ModuleConfiguration | ModuleConfiguration[];
 
@@ -48,9 +48,6 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[])
 	}
 
 	const importPath = node.source.value;
-	const pathSegments = importPath.split('/');
-
-	const module = importPath.startsWith('/') ? `/${pathSegments[1]}` : pathSegments[0];
 
 	const findIndex = (callback: (group: ModuleConfiguration) => boolean) =>
 		groups.findIndex((group) => {
@@ -65,23 +62,26 @@ function groupIndex(node: ImportModuleDeclaration, groups: GroupConfiguration[])
 
 	const hardCodedIndex = findIndex((group) => {
 		if (typeof group === 'string') {
-			return group === module;
+			return importPath.startsWith(group);
 		}
 
-		if (!Reflect.has(group, 'package')) {
+		if (!Reflect.has(group, 'path')) {
 			return false;
 		}
 
 		if (isTypeImport) {
-			return group.package === module && group.types !== TypeImportConfiguration.Exclude;
+			return importPath.startsWith(group.path) && group.types !== TypeImportConfiguration.Exclude;
 		}
 
-		return group.package === module && group.types !== TypeImportConfiguration.Only;
+		return importPath.startsWith(group.path) && group.types !== TypeImportConfiguration.Only;
 	});
 
 	if (hardCodedIndex >= 0) {
 		return hardCodedIndex;
 	}
+
+	const pathSegments = importPath.split('/');
+	const module = importPath.startsWith('/') ? `/${pathSegments[1]}` : pathSegments[0];
 
 	let moduleClass = ModuleClass.External;
 
@@ -126,7 +126,7 @@ function checkLines(context: RuleContext<GroupConfiguration[]>, previous: Import
 
 function groupLabels(groups: GroupConfiguration[]) {
 	return groups.map((group) => {
-		if (group instanceof Array || typeof group === 'string' || Reflect.has(group, 'package')) {
+		if (group instanceof Array || typeof group === 'string' || Reflect.has(group, 'path')) {
 			return 'custom';
 		}
 

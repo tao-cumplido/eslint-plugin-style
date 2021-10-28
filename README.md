@@ -40,24 +40,25 @@ interface ModuleClassConfiguration {
 	types?: 'include' | 'exclude' | 'only';
 }
 
-interface ModulePackageConfiguration {
-	package: string;
+interface ModulePathConfiguration {
+	path: string;
 	types?: 'include' | 'exclude' | 'only';
 }
 
-type ModuleConfiguration = string | ModulePackageConfiguration | ModuleClassConfiguration;
+type ModuleConfiguration = string | ModulePathConfiguration | ModuleClassConfiguration;
 
 type Configuration = Array<ModuleConfiguration | ModuleConfiguration[]>;
 ```
 
-where `ModuleConfiguration` can be a package name, a scope name or an object.  
-If it's an object, `package` can be a package name or a scope name and `class` can be one of the following:
+where `ModuleConfiguration` can be a path or an object.  
+If it's an object, `path` can be a path and `class` can be one of the following:
 
 -  `node`: All node builtin packages like `fs` and `path`, with or without the `node:` protocol prefix.
 -  `external`: All other declared dependencies, e.g. `lodash`, `react`, etc.
 -  `relative`: All relative imports.
 -  `absolute`: All absolute imports, never seen a project use these, but it's possible.
 
+Paths are matched from the start of the actual import path. This makes it possible for subpaths of the same module or scope to be in different groups.
 The property `types` is only relevant for TypeScript's type imports and defaults to `'include'`.
 If you want type and value imports to be in separate groups you need to explicitly declare them with `'only'` and `'exclude'`.
 
