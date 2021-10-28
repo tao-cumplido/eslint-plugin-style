@@ -25,7 +25,7 @@
 		"yarn": "1.22.10"
 	},
 	"scripts": {
-		"prepublishOnly": "yarn build",
+		"prepublishOnly": "yarn test && yarn build",
 		"build": "rimraf dist && tsc -p tsconfig.build.json",
 		"test": "jest",
 		"lint": "eslint \"**/*.{js,ts}\"",

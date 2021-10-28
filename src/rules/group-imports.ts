@@ -161,14 +161,14 @@ export const rule: RuleModule<GroupConfiguration[]> = {
 						{
 							type: 'object',
 							properties: {
-								package: {
+								path: {
 									type: 'string',
 								},
 								types: {
 									$ref: '#/definitions/typeImportConfiguration',
 								},
 							},
-							required: ['package'],
+							required: ['path'],
 							additionalProperties: false,
 						},
 					],
