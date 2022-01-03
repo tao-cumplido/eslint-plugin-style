@@ -9,6 +9,9 @@ export type ExportModuleDeclaration = estree.ExportAllDeclaration & Partial<Pick
 
 export type ModuleDeclaration = ImportModuleDeclaration | ExportModuleDeclaration;
 
+export type ImportSpecifier = estree.ImportSpecifier & Partial<Pick<TSESTree.ImportSpecifier, 'importKind'>>;
+export type ExportSpecifier = estree.ExportSpecifier & Partial<Pick<TSESTree.ExportSpecifier, 'exportKind'>>;
+
 export function importModules(source: SourceCode): ImportModuleDeclaration[] {
 	return source.ast.body.filter((node): node is ImportModuleDeclaration => node.type === 'ImportDeclaration');
 }
@@ -19,7 +22,7 @@ export function exportModules(source: SourceCode): ExportModuleDeclaration[] {
 	);
 }
 
-export function isTypeImportOrExport(node: ModuleDeclaration): boolean {
+export function isTypeImportOrExport(node: ModuleDeclaration | ImportSpecifier | ExportSpecifier): boolean {
 	return (Reflect.has(node, 'importKind') && node.importKind === 'type') || (Reflect.has(node, 'exportKind') && node.exportKind === 'type');
 }
 

@@ -1,5 +1,5 @@
 import { code, LintReporter, LintResult } from '../util/test';
-import { rule, TypeImportPosition } from './sort-imports';
+import { rule, TypeImportGroupPosition, TypeImportInlinePosition } from './sort-imports';
 
 describe('rule: sort-imports', () => {
 	const reporter = new LintReporter(rule);
@@ -275,7 +275,7 @@ describe('rule: sort-imports', () => {
 					import 'bar';
 					import type bar from 'bar';
 				`,
-				[{ typesInGroup: TypeImportPosition.Top }],
+				[{ typesInGroup: TypeImportGroupPosition.Top }],
 				tsParser,
 			);
 
@@ -297,7 +297,7 @@ describe('rule: sort-imports', () => {
 					import type bar from 'bar';
 					import 'bar';
 				`,
-				[{ typesInGroup: TypeImportPosition.Bottom }],
+				[{ typesInGroup: TypeImportGroupPosition.Bottom }],
 				tsParser,
 			);
 
@@ -319,7 +319,7 @@ describe('rule: sort-imports', () => {
 					import type foo from 'foo';
 					import type bar from 'bar';
 				`,
-				[{ typesInGroup: TypeImportPosition.AboveValue }],
+				[{ typesInGroup: TypeImportGroupPosition.AboveValue }],
 				tsParser,
 			);
 
@@ -341,7 +341,7 @@ describe('rule: sort-imports', () => {
 					import 'foo';
 					import 'bar';
 				`,
-				[{ typesInGroup: TypeImportPosition.BelowValue }],
+				[{ typesInGroup: TypeImportGroupPosition.BelowValue }],
 				tsParser,
 			);
 
@@ -353,6 +353,30 @@ describe('rule: sort-imports', () => {
 				import 'foo';
 				import type foo from 'foo';
 			`);
+		});
+
+		test('inline types', () => {
+			const report = reporter.lint(code`import { type b, a } from 'foo';`, [], tsParser);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`import { a, type b } from 'foo';`);
+		});
+
+		test('inline types start', () => {
+			const report = reporter.lint(code`import { a, type b } from 'foo';`, [{ inlineTypes: TypeImportInlinePosition.Start }], tsParser);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`import { type b, a } from 'foo';`);
+		});
+
+		test('inline types end', () => {
+			const report = reporter.lint(code`import { type a, b } from 'foo';`, [{ inlineTypes: TypeImportInlinePosition.End }], tsParser);
+
+			expect(report.result).toEqual(LintResult.Fixed);
+			expect(report.errors).toHaveLength(1);
+			expect(report.code).toEqual(code`import { b, type a } from 'foo';`);
 		});
 	});
 });

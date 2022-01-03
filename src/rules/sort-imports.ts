@@ -1,13 +1,13 @@
-import type { ExportSpecifier, ImportSpecifier, Node } from 'estree';
+import type { Node } from 'estree';
 
-import type { ExportModuleDeclaration, ImportModuleDeclaration, ModuleDeclaration } from '../util/ast';
+import type { ExportModuleDeclaration, ExportSpecifier, ImportModuleDeclaration, ImportSpecifier, ModuleDeclaration } from '../util/ast';
 import type { RuleModule } from '../util/rule';
 import type { SortOptions } from '../util/sort';
 import { exportModules, extrema, importModules, isTypeImportOrExport, linesBetween } from '../util/ast';
 import { fixRange } from '../util/rule';
 import { sortByPath } from '../util/sort';
 
-export enum TypeImportPosition {
+export enum TypeImportGroupPosition {
 	Ignore = 'ignore',
 	Top = 'top',
 	Bottom = 'bottom',
@@ -15,10 +15,17 @@ export enum TypeImportPosition {
 	BelowValue = 'below-value',
 }
 
+export enum TypeImportInlinePosition {
+	Ignore = 'ignore',
+	Start = 'start',
+	End = 'End',
+}
+
 export interface Configuration extends SortOptions {
 	specifier: 'source' | 'rename';
 	sortExports: boolean;
-	typesInGroup: TypeImportPosition;
+	typesInGroup: TypeImportGroupPosition;
+	inlineTypes: TypeImportInlinePosition;
 }
 
 const defaultConfiguration: Configuration = {
@@ -27,7 +34,8 @@ const defaultConfiguration: Configuration = {
 	numeric: true,
 	caseFirst: 'lower',
 	sortExports: true,
-	typesInGroup: TypeImportPosition.Ignore,
+	typesInGroup: TypeImportGroupPosition.Ignore,
+	inlineTypes: TypeImportInlinePosition.Ignore,
 };
 
 export const rule: RuleModule<[Partial<Configuration>?]> = {
@@ -89,7 +97,7 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 		const sortModules = (group: ModuleDeclaration[]) => {
 			const sorted = sortByPath(group, ['source', 'value'], configuration);
 
-			if (configuration.typesInGroup !== TypeImportPosition.Ignore) {
+			if (configuration.typesInGroup !== TypeImportGroupPosition.Ignore) {
 				sorted.sort((a, b) => {
 					const aIsType = isTypeImportOrExport(a);
 					const bIsType = isTypeImportOrExport(b);
@@ -100,18 +108,18 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 
 					// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 					switch (configuration.typesInGroup) {
-						case TypeImportPosition.Top:
+						case TypeImportGroupPosition.Top:
 							return aIsType ? -1 : 1;
-						case TypeImportPosition.Bottom:
+						case TypeImportGroupPosition.Bottom:
 							return aIsType ? 1 : -1;
 					}
 
 					if (a.source.value === b.source.value) {
 						// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
 						switch (configuration.typesInGroup) {
-							case TypeImportPosition.AboveValue:
+							case TypeImportGroupPosition.AboveValue:
 								return aIsType ? -1 : 1;
-							case TypeImportPosition.BelowValue:
+							case TypeImportGroupPosition.BelowValue:
 								return aIsType ? 1 : -1;
 						}
 					}
@@ -143,6 +151,27 @@ export const rule: RuleModule<[Partial<Configuration>?]> = {
 				const from: 'exported' | 'local' = configuration.specifier === 'source' ? 'local' : 'exported';
 				return sortByPath(specifiers as ExportSpecifier[], [from, 'name'], configuration);
 			})();
+
+			if (configuration.inlineTypes !== TypeImportInlinePosition.Ignore) {
+				sorted.sort((a, b) => {
+					const aIsType = isTypeImportOrExport(a);
+					const bIsType = isTypeImportOrExport(b);
+
+					if (aIsType === bIsType) {
+						return 0;
+					}
+
+					// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+					switch (configuration.inlineTypes) {
+						case TypeImportInlinePosition.Start:
+							return aIsType ? -1 : 1;
+						case TypeImportInlinePosition.End:
+							return aIsType ? 1 : -1;
+					}
+
+					return 0;
+				});
+			}
 
 			if (sorted.some((node, i) => node !== specifiers[i])) {
 				fixRange(context, {

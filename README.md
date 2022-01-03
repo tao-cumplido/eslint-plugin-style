@@ -104,6 +104,7 @@ interface Configuration {
 	caseGroups?: boolean;
 	sortExports?: boolean;
 	typesInGroup?: 'ignore' | 'top' | 'bottom' | 'above-value' | 'below-value';
+	inlineTypes?: 'ignore' | 'start' | 'end';
 }
 ```
 
@@ -111,6 +112,7 @@ interface Configuration {
 -  `caseGroups`: When `true`, import names need to be grouped by case before sorting.
 -  `sortExports`: Whether to sort deferred export groups, i.e. all statements that export from another module.
 -  `typesInGroup`: Where to place type imports/exports in groups with mixed type and value imports/exports. TypeScript only!
+-  `inlineTypes`: Where to place inline type imports/exports with mixed type and value imports/exports. TypeScript only!
 
 For all other possible settings, see [String#localeCompare](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare).
 
@@ -126,7 +128,8 @@ The default configuration is:
 	"caseFirst": "lower",
 	"caseGroups": false,
 	"sortExports": true,
-	"typesInGroup": "ignore"
+	"typesInGroup": "ignore",
+	"inlineTypes": "ignore"
 }
 ```
 

@@ -53,10 +53,10 @@ export class LintReporter<Configuration extends unknown[]> {
 		// in both cases validation will be synchronous but Ajv's typings don't provide this difference
 		if (this.rule.meta?.schema instanceof Array) {
 			const schemas = this.rule.meta.schema;
-			// eslint-disable-next-line @typescript-eslint/no-misused-promises
-			options.forEach((option, index) => this.ajv.validate(schemas[index], option));
+			options.forEach((option, index) => {
+				this.ajv.validate(schemas[index], option);
+			});
 		} else if (this.rule.meta?.schema) {
-			// eslint-disable-next-line @typescript-eslint/no-floating-promises
 			this.ajv.validate(this.rule.meta.schema, options);
 		}
 
