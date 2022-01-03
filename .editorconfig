@@ -13,8 +13,5 @@ end_of_line = lf
 max_line_length = off
 trim_trailing_whitespace = false
 
-[yarn.lock]
-indent_size = 2
-
 [**/node_modules/**]
 indent_size = unset

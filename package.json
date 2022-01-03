@@ -21,39 +21,37 @@
 	],
 	"main": "dist/index.js",
 	"volta": {
-		"node": "16.13.0",
-		"yarn": "1.22.10"
+		"node": "16.13.1"
 	},
 	"scripts": {
-		"prepublishOnly": "yarn test && yarn build",
+		"prepublishOnly": "npm run test && npm run build",
 		"build": "rimraf dist && tsc -p tsconfig.build.json",
 		"test": "jest",
 		"lint": "eslint \"**/*.{js,ts}\"",
 		"format": "prettier --write \"**/*.{js,ts,json,md}\""
 	},
 	"dependencies": {
-		"builtin-modules": "^3.2.0",
-		"tslib": "^2.3.1"
+		"builtin-modules": "3.2.0",
+		"tslib": "2.3.1"
 	},
 	"devDependencies": {
-		"@types/eslint": "^7.28.2",
-		"@types/estree": "0.0.45",
-		"@types/jest": "^27.0.2",
-		"@types/node": "^16.11.6",
-		"@typescript-eslint/eslint-plugin": "^5.2.0",
-		"@typescript-eslint/parser": "^5.2.0",
-		"@typescript-eslint/types": "^5.2.0",
-		"ajv": "6.12.6",
-		"eslint": "^8.1.0",
-		"eslint-plugin-no-only-tests": "^2.4.0",
-		"eslint-plugin-style": "^0.1.5",
-		"husky": "^4.3.0",
-		"jest": "^27.3.1",
-		"lint-staged": "^10.5.2",
-		"prettier": "^2.2.1",
+		"@types/eslint": "8.2.1",
+		"@types/jest": "27.4.0",
+		"@types/node": "16.11.18",
+		"@typescript-eslint/eslint-plugin": "5.9.0",
+		"@typescript-eslint/parser": "5.9.0",
+		"@typescript-eslint/types": "5.9.0",
+		"ajv": "8.8.2",
+		"eslint": "8.6.0",
+		"eslint-plugin-no-only-tests": "2.6.0",
+		"eslint-plugin-style": "0.1.7",
+		"husky": "4.3.0",
+		"jest": "27.4.5",
+		"lint-staged": "10.5.2",
+		"prettier": "2.5.1",
 		"rimraf": "3.0.2",
-		"ts-jest": "^27.0.7",
-		"typescript": "~4.4.4"
+		"ts-jest": "27.1.2",
+		"typescript": "4.5.4"
 	},
 	"peerDependencies": {
 		"@typescript-eslint/parser": "^5.0.0",
