@@ -1,3 +1,6 @@
+> [!Important]
+> the package moved to https://www.npmjs.com/package/@shigen/eslint-plugin and the repository to https://github.com/tao-cumplido/shigen.
+
 # eslint-plugin-style
 
 > ESLint plugin for for stylistic issues in modern JavaScript
